@@ -1,0 +1,41 @@
+# Local reference material is not part of the application distribution.
+/reference/
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+!**/.env.example
+*.pem
+*.key
+
+# Python and uv
+.venv/
+.uv-cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+pytest-cache-files-*/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Frontend
+node_modules/
+dist/
+*.tsbuildinfo
+.npm-cache/
+
+# Runtime data, uploads, indices and logs
+/var/
+*.log
+*.db
+*.sqlite*
+/tests/results/
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
