@@ -1,0 +1,49 @@
+{
+  "fixture_notice": "仅供结构契约测试。fixture:开头的来源不是已核实课程资料，禁止导入知识库或作为真实资源发布。",
+  "resources": [
+    {
+      "resource_type": "lecture",
+      "title": "栈的基本概念",
+      "source_ids": ["fixture:stack"],
+      "learning_objectives": ["理解后进先出"],
+      "prerequisites": ["理解线性序列"],
+      "sections": [{"heading": "后进先出", "explanation": "栈通常只允许在栈顶插入和删除元素。"}],
+      "examples": [{"title": "入栈与出栈", "content": "依次压入A和B，再弹出一个元素，得到B。"}],
+      "summary": "最后进入栈的元素最先弹出。"
+    },
+    {
+      "resource_type": "exercise",
+      "title": "栈的基础练习",
+      "source_ids": ["fixture:stack"],
+      "questions": [
+        {
+          "question_type": "single_choice",
+          "question_id": "Q1",
+          "prompt": "依次压入A、B后，第一次弹出哪个元素？",
+          "options": [{"label": "A", "content": "元素A"}, {"label": "B", "content": "元素B"}],
+          "answer": "B",
+          "analysis": "B最后入栈，位于栈顶，因此先弹出。"
+        },
+        {
+          "question_type": "short_answer",
+          "question_id": "Q2",
+          "prompt": "括号序列([)]是否匹配？",
+          "answer": "不匹配。",
+          "analysis": "遇到右圆括号时，栈顶是左方括号，括号类型不一致。"
+        }
+      ]
+    },
+    {
+      "resource_type": "mindmap",
+      "title": "栈的知识大纲",
+      "source_ids": ["fixture:stack"],
+      "root": {
+        "label": "栈",
+        "children": [
+          {"label": "基本操作", "children": [{"label": "入栈"}, {"label": "出栈"}]},
+          {"label": "典型应用", "children": [{"label": "括号匹配"}]}
+        ]
+      }
+    }
+  ]
+}

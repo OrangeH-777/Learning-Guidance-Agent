@@ -7,6 +7,7 @@ from fastapi import FastAPI
 from backend.app.api.router import router as api_router
 from backend.app.api.routes.health import router as health_router
 from backend.app.core.config import Settings, get_settings
+from backend.app.core.errors import register_error_handlers
 from backend.app.db.session import create_database_engine
 
 
@@ -29,6 +30,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     )
     application.include_router(health_router)
     application.include_router(api_router)
+    register_error_handlers(application)
     return application
 
 
