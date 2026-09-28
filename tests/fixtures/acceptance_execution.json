@@ -1,0 +1,277 @@
+{
+  "baseline_sha256": "746c14e7a963ccbd1fc5758a0c590617a79cfc16ec0065cd47ccf650b6f41655",
+  "revision": "REQ-001-approved-2026-09-27",
+  "decision": "用户确认仅修订执行集DS13，原Word与原始导入记录保持不变。",
+  "course_cases": [
+    {
+      "id": "DS01",
+      "course_id": "data_structure",
+      "knowledge_domain": "线性表",
+      "learner_level": "初学",
+      "resource_type": "lecture",
+      "request": "用数组例子解释线性表与顺序存储。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS02",
+      "course_id": "data_structure",
+      "knowledge_domain": "线性表",
+      "learner_level": "复习",
+      "resource_type": "lecture",
+      "request": "比较顺序表与链表的插入、删除代价。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS03",
+      "course_id": "data_structure",
+      "knowledge_domain": "线性表",
+      "learner_level": "初学",
+      "resource_type": "exercise",
+      "request": "设计顺序表访问与插入的基础选择题并解析。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS04",
+      "course_id": "data_structure",
+      "knowledge_domain": "线性表",
+      "learner_level": "复习",
+      "resource_type": "exercise",
+      "request": "给出单链表删除头结点与空表边界题。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS05",
+      "course_id": "data_structure",
+      "knowledge_domain": "线性表",
+      "learner_level": "复习",
+      "resource_type": "mindmap",
+      "request": "梳理线性表逻辑结构与两种存储实现。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS06",
+      "course_id": "data_structure",
+      "knowledge_domain": "栈与队列",
+      "learner_level": "初学",
+      "resource_type": "lecture",
+      "request": "解释栈的后进先出与括号匹配过程。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS07",
+      "course_id": "data_structure",
+      "knowledge_domain": "栈与队列",
+      "learner_level": "初学",
+      "resource_type": "lecture",
+      "request": "用排队场景解释队列及循环队列。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS08",
+      "course_id": "data_structure",
+      "knowledge_domain": "栈与队列",
+      "learner_level": "复习",
+      "resource_type": "exercise",
+      "request": "给出合法出栈序列判断题及逐步解析。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS09",
+      "course_id": "data_structure",
+      "knowledge_domain": "栈与队列",
+      "learner_level": "复习",
+      "resource_type": "exercise",
+      "request": "约定牺牲一个存储单元，判断循环队列空满。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS10",
+      "course_id": "data_structure",
+      "knowledge_domain": "栈与队列",
+      "learner_level": "复习",
+      "resource_type": "mindmap",
+      "request": "比较栈与队列操作、实现和典型应用。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS11",
+      "course_id": "data_structure",
+      "knowledge_domain": "树",
+      "learner_level": "初学",
+      "resource_type": "lecture",
+      "request": "通过小树解释前序、中序、后序遍历。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS12",
+      "course_id": "data_structure",
+      "knowledge_domain": "树",
+      "learner_level": "复习",
+      "resource_type": "exercise",
+      "request": "给出一棵明确二叉树，求三种遍历序列。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS13",
+      "course_id": "data_structure",
+      "knowledge_domain": "树",
+      "learner_level": "初学",
+      "resource_type": "mindmap",
+      "request": "梳理二叉树层数、结点数量上界及编号约定的文本导图。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS14",
+      "course_id": "data_structure",
+      "knowledge_domain": "树",
+      "learner_level": "初学",
+      "resource_type": "mindmap",
+      "request": "整理树的术语、二叉树性质和遍历方式。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS15",
+      "course_id": "data_structure",
+      "knowledge_domain": "树",
+      "learner_level": "复习",
+      "resource_type": "mindmap",
+      "request": "梳理二叉搜索树查找、插入及退化情况。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS16",
+      "course_id": "data_structure",
+      "knowledge_domain": "图",
+      "learner_level": "初学",
+      "resource_type": "lecture",
+      "request": "说明邻接矩阵与邻接表的区别及适用场景。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS17",
+      "course_id": "data_structure",
+      "knowledge_domain": "图",
+      "learner_level": "复习",
+      "resource_type": "lecture",
+      "request": "比较BFS与DFS并说明访问顺序的约定。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS18",
+      "course_id": "data_structure",
+      "knowledge_domain": "图",
+      "learner_level": "复习",
+      "resource_type": "exercise",
+      "request": "给出有向图及顶点访问次序，完成一次BFS。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS19",
+      "course_id": "data_structure",
+      "knowledge_domain": "图",
+      "learner_level": "初学",
+      "resource_type": "mindmap",
+      "request": "梳理有向图、无向图、度和基本存储方式。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS20",
+      "course_id": "data_structure",
+      "knowledge_domain": "图",
+      "learner_level": "复习",
+      "resource_type": "mindmap",
+      "request": "整理图遍历、连通性与最短路的概念关系。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS21",
+      "course_id": "data_structure",
+      "knowledge_domain": "查找",
+      "learner_level": "初学",
+      "resource_type": "lecture",
+      "request": "用有序数组演示二分查找并说明适用前提。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS22",
+      "course_id": "data_structure",
+      "knowledge_domain": "查找",
+      "learner_level": "复习",
+      "resource_type": "exercise",
+      "request": "分析空数组、单元素及目标不存在的边界。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS23",
+      "course_id": "data_structure",
+      "knowledge_domain": "查找",
+      "learner_level": "初学",
+      "resource_type": "exercise",
+      "request": "比较顺序查找与二分查找的条件和复杂度。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS24",
+      "course_id": "data_structure",
+      "knowledge_domain": "查找",
+      "learner_level": "复习",
+      "resource_type": "mindmap",
+      "request": "整理顺序、二分、散列查找的条件和特点。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS25",
+      "course_id": "data_structure",
+      "knowledge_domain": "查找",
+      "learner_level": "复习",
+      "resource_type": "mindmap",
+      "request": "梳理散列冲突、装填因子与解决方法。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS26",
+      "course_id": "data_structure",
+      "knowledge_domain": "排序",
+      "learner_level": "初学",
+      "resource_type": "lecture",
+      "request": "逐轮展示直接插入排序的过程。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS27",
+      "course_id": "data_structure",
+      "knowledge_domain": "排序",
+      "learner_level": "复习",
+      "resource_type": "lecture",
+      "request": "比较快速排序与归并排序的复杂度和稳定性。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS28",
+      "course_id": "data_structure",
+      "knowledge_domain": "排序",
+      "learner_level": "初学",
+      "resource_type": "exercise",
+      "request": "对含重复关键字的数据判断排序稳定性。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS29",
+      "course_id": "data_structure",
+      "knowledge_domain": "排序",
+      "learner_level": "复习",
+      "resource_type": "exercise",
+      "request": "分析快速排序的最坏情况及递归边界。",
+      "execution_status": "not_run"
+    },
+    {
+      "id": "DS30",
+      "course_id": "data_structure",
+      "knowledge_domain": "排序",
+      "learner_level": "复习",
+      "resource_type": "mindmap",
+      "request": "按稳定性、空间和时间整理常见内部排序。",
+      "execution_status": "not_run"
+    }
+  ]
+}

@@ -10,10 +10,14 @@ router = APIRouter(tags=["health"])
 
 @router.get("/health")
 def health() -> dict[str, str]:
-    return {"status": "ok", "service": "learning-guidance-agent", "stage": "scaffold"}
+    return {"status": "ok", "service": "learning-guidance-agent", "stage": "development"}
 
 
 @router.get("/health/ready")
 def readiness(request: Request) -> JSONResponse:
     result = check_database(request.app.state.database_engine)
+    executor = request.app.state.executor
+    result["scheduler"] = "ok" if executor and executor.ready else "not_ready"
+    if result["status"] == "ok" and result["scheduler"] != "ok":
+        result["status"] = "not_ready"
     return JSONResponse(result, status_code=200 if result["status"] == "ok" else 503)

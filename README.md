@@ -1,213 +1,160 @@
-# 基于多智能体协作的个性化学习资源平台
+# 个性化学习资源平台 · Learning Guidance Agent
 
-Learning Guidance Agent 面向大学生，根据经用户确认的知识基础、学习目标和兴趣偏好，协作生成课程讲解、带答案解析的练习题和文本思维导图，并提供核验、保存与个人历史。
+根据经用户确认的学习基础、目标与偏好，结合课程知识生成讲解、练习和文本思维导图，提供自动核验、来源追溯与个人历史。
 
-**当前版本为项目架构骨架。** 已提供前端占位页面、后端健康检查、PostgreSQL/pgvector 检查入口、Alembic 配置、依赖锁定及模块目录。登录、画像、课程选择、个人模型设置、检索、智能体生成和上传功能尚未实现。完整任务与确认框见 [plan.md](plan.md)。
+当前已实现首期业务代码：注册登录、每课程独立画像与对话草稿、个人模型设置、四类协议适配、课程目录与 pgvector 检索、LangGraph 工作流、任务调度、三类资源展示及历史。已用真实 PostgreSQL 与明确标记的模型替身跑通完整流程；**尚未配置真实聊天/嵌入服务，因此不宣称真实模型质量验收或正式交付完成**。逐项状态见 [plan.md](plan.md)，证据见 [实施报告](docs/test/implementation-phase2.md)。
 
-2026-09-27已进入S1设计与契约实施：新增[模块与流程设计](docs/design/architecture.md)、[需求变更记录](docs/requirements/change-record.md)、三类资源结构契约、注册/画像/对话输入校验，以及原Word测试规格导入。当前接口仍只有健康检查，新增契约不等于完整业务已经可用。实施与验证结果见[本次记录](docs/test/implementation-2026-09-27.md)。
+## 技术与目录
 
-## 需求依据与已确认变更
+Node.js 24.14.1、Python 3.13.0；Vue 3 / TypeScript / Vite；FastAPI / SQLAlchemy / Alembic；PostgreSQL / pgvector；LangGraph。Python 依赖由 uv.lock 锁定，前端由 package-lock.json 锁定。
 
-原始依据位于 `docs/`：`项目内容.docx`、`项目启动文档.docx`、`第一循环文档.docx`、`第二循环文档.docx`。原文件保持不变，后续实施采用本次讨论确认的调整：
-
-| 项目 | 当前实施方向 |
+| 目录 | 内容 |
 | --- | --- |
-| 数据库 | PostgreSQL＋pgvector，替代原文档 SQLite |
-| 环境 | Node.js 24、Python 3.13，Python 使用 uv 管理 |
-| 课程 | 首期支持选择多个课程；数据结构保留为已有需求与测试样例的基础课程 |
-| 公共知识 | `knowledge/<course_id>/` 分课程维护，供所有用户在相应课程中检索 |
-| 私有知识 | 后续实现个人教材上传，检索限定“所选课程公共知识＋本人私有知识” |
-| 聊天模型 | 每个用户配置自己的协议、Base URL、API Key、模型ID；凭据后端加密保存 |
-| 嵌入模型 | 部署方独立统一配置，索引与个人聊天模型解耦 |
-| 部署 | 当前提供本地开发方式；系统可运行后再讨论 Docker 等部署配置 |
+| frontend/ | 登录、工作台、画像、模型设置、资源及历史页面 |
+| backend/app/ | 认证、接口、业务、持久化与单进程任务调度 |
+| backend/migrations/ | 两个 Alembic 迁移版本 |
+| agents/ | 四类协议、节点、LangGraph、检索及核验 |
+| knowledge/<course_id>/ | course.yaml 元数据及 content/*.md 公共正文 |
+| scripts/ | 目录导入、索引、迁移检查、密钥轮换、验收执行及契约导出 |
+| tests/ | 单元、协议、真实数据库集成测试、原始/修订验收样例 |
+| docs/ | 四份原始 Word、设计、测试和使用/运行手册 |
 
-原需求 R01—R07 保留，新增课程、模型设置和知识功能的任务见 plan.md。学习路径与上下文问答 R08 仍为需另外评审的可选项。视频、动画、模型训练、在线代码执行、教师后台不在已确认范围。
+`npm run dev` 必须读取 npm 的 `package.json`，Vite 构建读取 `vite.config.ts`；课程业务配置已采用 YAML。两种文件负责不同内容，课程目录不会从测试 JSON 中加载。个人模型设置保存在数据库，部署秘密放在根目录 `.env`。
 
-## 技术组成
+## 本地运行
 
-| 层次 | 技术与职责 |
-| --- | --- |
-| 前端 | Vue 3、TypeScript、Vite、Vue Router、Axios |
-| 业务后端 | FastAPI、Pydantic、SQLAlchemy、Psycopg、Alembic |
-| 工作流 | LangGraph；规划、生成、核验、格式整理模块占位 |
-| 数据与检索 | PostgreSQL、pgvector；真实数据库及检索逻辑待接入 |
-| 工程工具 | uv、npm、pytest、Ruff |
+### 1. 安装依赖
 
-Node 固定版本见 `.node-version` / `.nvmrc`，当前为 `24.14.1`；Python 固定版本见 `.python-version`，当前为 `3.13.0`。精确依赖分别记录于 `uv.lock` 和 `frontend/package-lock.json`，不手工修改锁文件。
-
-uv 使用项目内 `.venv` 和 `uv.lock` 管理环境，复现时使用 `uv sync --locked`。参见 [uv 项目结构说明](https://docs.astral.sh/uv/concepts/projects/layout/)。
-
-## 目录
-
-```text
-Learning-Guidance-Agent/
-├── frontend/                 Vue 应用与构建配置
-│   └── src/
-│       ├── api/              HTTP 客户端
-│       ├── components/       通用组件预留
-│       ├── router/           路由
-│       ├── views/            当前占位页，业务页后续添加
-│       ├── types/            业务类型预留
-│       └── styles/           基础样式
-├── backend/
-│   ├── app/
-│   │   ├── main.py           应用入口与生命周期
-│   │   ├── api/              健康检查与业务路由入口
-│   │   ├── core/             环境配置
-│   │   ├── db/               数据库连接、元数据与检查
-│   │   ├── schemas/          接口数据结构预留
-│   │   ├── repositories/     数据访问预留
-│   │   ├── services/         业务服务预留
-│   │   └── tasks/            任务调度和恢复预留
-│   └── migrations/           Alembic 配置；尚无业务迁移
-├── agents/                   工作流、节点、协议、提示词、检索与核验
-├── knowledge/
-│   └── data_structure/       数据结构公共知识空目录
-│       ├── content/
-│       └── sources/
-├── tests/                    unit、integration、contract、system、fixtures
-├── scripts/                  数据库检查命令
-├── docs/                     原始文档及后续过程文档目录
-├── reference/                本地参考项目，已排除出本项目 Git 跟踪范围
-├── .env.example              配置样例，不含真实密钥
-├── pyproject.toml / uv.lock  Python 依赖及锁文件
-├── alembic.ini               数据库迁移入口
-├── plan.md                   从初始化到交付的任务清单
-└── README.md
-```
-
-后端与智能体在同一 Python 环境中运行。未来任务由单后端进程中的受控异步执行器管理，状态持久化；首期不支持多个 Uvicorn worker 同时调度。实现细节与压力验证按 plan.md 推进。
-
-QwenPaw 仅用于参考业务接口、运行调度、模型适配和配置分层；本项目不依赖其 React、AgentScope、插件平台或桌面能力。
-
-## 快速启动骨架
-
-### 1. 准备运行时
-
-安装 Node.js 24、npm 11 和 uv。进入项目根目录后核对：
-
-```powershell
-node --version
-npm --version
-uv --version
-```
-
-如没有 `.python-version` 指定的 Python，可执行 `uv python install 3.13.0`，然后：
+在项目根目录执行：
 
 ```powershell
 uv sync --locked
-Copy-Item .env.example .env
+cd frontend
+npm ci
+cd ..
 ```
 
-已有 `.env` 时保留原配置，不重复复制覆盖。Linux 对应的复制命令为 `cp -n .env.example .env`，其余 `uv`、`npm` 命令一致。
+### 2. 准备数据库和本地配置
 
-`.env` 由后端从项目根目录加载。当前启动无需模型密钥，也不要求数据库已经可用；这只用于验证骨架服务，不能执行业务流程。
+本工作区已建立本地数据库容器 `lga-postgres-dev`，仅监听 `127.0.0.1:55432`。开发库 `lga_dev`、测试库 `lga_test` 相互独立，已实际验证 PostgreSQL 17.11 / pgvector 0.8.6。随机数据库凭据和 Fernet 密钥已保存在忽略的 `.env`；**不要覆盖已有 .env**。
 
-### 2. 启动后端
+已有容器未启动时：
 
-在项目根目录的终端执行：
+```powershell
+docker start lga-postgres-dev
+```
+
+其他环境可以使用自行维护的 PostgreSQL＋pgvector，复制 `.env.example` 为 `.env` 并填写 `DATABASE_URL`、`MODEL_CREDENTIAL_ENCRYPTION_KEY`。数据库地址格式为 `postgresql+psycopg://USER:PASSWORD@HOST:PORT/DB`，密码中的特殊字符须 URL 编码。Fernet 密钥必须由 `cryptography.fernet.Fernet.generate_key()` 生成。
+
+也可以在已有 Docker 的全新本地环境、且尚无 `.env` 时执行：
+
+```powershell
+uv run --locked python -m scripts.setup_local_database
+docker exec lga-postgres-dev pg_isready -U lga
+docker exec lga-postgres-dev createdb -U lga lga_test
+```
+
+该脚本使用固定镜像摘要，只搭建本地开发数据库，不是服务器部署方案；容器数据保存在 `lga-postgres-data` volume。首次迁移需要有安装 vector 扩展的权限。运行时应使用专用受限账号，正式权限方案仍需部署评审。
+
+```powershell
+uv run --locked alembic upgrade head
+uv run --locked python -m scripts.import_courses
+uv run --locked python -m scripts.check_database
+```
+
+### 3. 启动前后端
+
+根目录终端：
 
 ```powershell
 uv run --locked uvicorn backend.app.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
-- [存活检查](http://127.0.0.1:8000/health)：正常返回 `status=ok` 和 `stage=scaffold`，不表示数据库或业务已就绪。
-- [数据库就绪检查](http://127.0.0.1:8000/health/ready)：只有 PostgreSQL 可访问且已启用 pgvector 时返回 HTTP 200；缺少配置、连接失败或扩展缺失返回 HTTP 503。
-- [接口说明](http://127.0.0.1:8000/docs)：当前仅包含健康检查接口。
-
-### 3. 启动前端
-
-另开终端，从项目根目录执行：
+另一个终端：
 
 ```powershell
 cd frontend
-npm ci
 npm run dev
 ```
 
-打开 [本地前端](http://127.0.0.1:5173)，点击“检查后端连接”。Vite 将 `/api` 和 `/health` 代理到 `127.0.0.1:8000`，浏览器不直接访问模型服务。端口冲突时会明确退出，请先处理占用。
+访问 http://127.0.0.1:5173 。API 文档在 http://127.0.0.1:8000/docs 。`/health` 是存活检查，`/health/ready` 检查 PostgreSQL、pgvector 和调度器；就绪不代表外部模型和课程内容已经验收。
 
-结束服务时分别在前后端终端按 `Ctrl+C`。
+只能运行一个后端调度进程，不要增加 Uvicorn workers；应用用 PostgreSQL advisory lock 防止同库双调度。结束前后端用 Ctrl+C；停止本地数据库用 `docker stop lga-postgres-dev`，无需删除 volume。
 
-## PostgreSQL 与 pgvector
+### 4. 配置模型与知识
 
-项目不会自动安装系统数据库、创建账号、修改现有数据库或启用扩展。准备一个项目专用 PostgreSQL 数据库，并由数据库维护者安装匹配版本的 pgvector 服务端扩展。Python 的 `pgvector` 包不等于数据库已安装扩展。
+注册登录后，进入“模型设置”，选择协议并填写 Base URL、模型 ID、API Key，再主动执行连接测试。支持 Chat Completions、Responses、Anthropic Messages、Gemini；兼容服务逐协议验证，不自动切换模型。Base URL 包含版本根路径，例如 `/v1` 或 `/v1beta`，不包含具体方法路径。
 
-管理员在**项目数据库**中执行：
+默认仅允许公网 HTTPS；本地或内网服务由部署方在 `MODEL_ENDPOINT_ALLOWLIST` 配置精确 origin。API Key 后端加密，页面不回显。连接测试、对话提取和生成可能产生服务商费用。
 
-```sql
-CREATE EXTENSION IF NOT EXISTS vector;
-```
-
-pgvector 需在每个使用它的数据库中启用，安装方式见 [pgvector 官方说明](https://github.com/pgvector/pgvector#installation)。
-
-在根目录 `.env` 填入实际连接信息，例如：
+统一嵌入配置在 `.env` 中填写：
 
 ```dotenv
-DATABASE_URL=postgresql+psycopg://USER:PASSWORD@127.0.0.1:5432/learning_guidance
+EMBEDDING_PROTOCOL=openai_compatible
+EMBEDDING_BASE_URL=https://YOUR_PROVIDER/v1
+EMBEDDING_API_KEY=YOUR_KEY
+EMBEDDING_MODEL=YOUR_EMBEDDING_MODEL
+EMBEDDING_DIMENSIONS=YOUR_ACTUAL_DIMENSIONS
+EMBEDDING_INDEX_VERSION=YOUR_UNIQUE_VERSION
 ```
 
-将 `USER`、`PASSWORD` 和数据库名替换为实际值；密码含 `@`、`:`、`/` 等字符时须做 URL 编码。不要将真实连接串提交到仓库或贴入问题日志。
+上面的占位符必须替换为实际值；维度必须是模型实际输出的整数。不要将密钥放进课程 YAML、前端变量或 Git。保存 `.env` 后重启后端。
 
-执行只读检查：
+课程文件见 [知识说明](knowledge/README.md)。当前只有数据结构实际目录，六个主题摘要已提供，尚待内容负责人复核；其他真实课程未擅自编造。索引工具默认拒绝未复核资料：
 
 ```powershell
-uv run --locked python -m scripts.check_database
+uv run --locked python -m scripts.index_knowledge data_structure
 ```
 
-成功返回 `status=ok`；未配置或不可用时退出码为 1，输出不包含连接凭据。该命令只检查连接和扩展，不建业务表，也不证明读写权限、迁移、事务或负载测试已经通过。
+内容负责人实际复核后，在 course.yaml 更新对应 `review_status: approved`。仅限明确的本地开发预览，可使用 `--allow-unreviewed-preview`；该选项不代表材料已通过人工验收。索引会向嵌入服务发送课程正文，可能产生费用。未配置嵌入、不存在匹配材料或索引未就绪时会阻止生成，不制造假向量或来源。
 
-Alembic 已配置，可运行 `uv run --locked alembic history` 查看迁移历史。**当前没有业务表或迁移版本**；首个表结构经评审并编写迁移后，才使用 `uv run --locked alembic upgrade head` 建表。模型定义、迁移与回退测试列在 plan.md，不能将目前空迁移历史视为数据库初始化完成。
+切换嵌入模型、维度或资料内容时使用新的索引版本再重建。历史资源继续引用原片段。检索参数当前是可调开发初值，真实召回质量尚未测量。
 
-## 模型与知识配置边界
+## 检查与测试
 
-个人模型设置计划支持以下协议，当前仅预留模块：
-
-| 协议 | 接入方向 |
-| --- | --- |
-| OpenAI Chat Completions | 该协议的原生或兼容服务 |
-| OpenAI Responses | Responses 协议服务 |
-| Anthropic Messages | Messages 协议服务 |
-| Gemini 原生协议 | Gemini 协议服务 |
-
-用户将填写协议、Base URL、API Key、模型ID。密钥由后端加密保存，页面只显示脱敏状态；服务商兼容程度与实际能力须单独验证，不能仅凭“兼容”名称宣称全部支持。具体服务商预设及能力矩阵在实现阶段确认。
-
-`EMBEDDING_*` 是部署方的嵌入配置，独立于个人聊天设置。当前没有指定嵌入服务商、模型或维度，也没有索引程序；应在知识检索阶段确认后填写。`.env.example` 注明了尚未启用的配置，当前实际读取的只有 `DATABASE_URL` 和 `DATABASE_CONNECT_TIMEOUT_SECONDS`。
-
-公共资料组织规则见 [knowledge/README.md](knowledge/README.md)。私有上传后续实施，其原文件、片段、向量、引用和缓存都须按照当前用户与课程隔离，不加入 Git。当前没有上传入口或静态文件下载通道。
-
-## 检查与构建
-
-根目录执行：
+根目录：
 
 ```powershell
-uv run --locked pytest -q
+uv run --locked pytest -q -p no:cacheprovider
 uv run --locked ruff check backend agents scripts tests
 uv run --locked ruff format --check backend agents scripts tests
+uv run --locked alembic check
 ```
 
-前端目录执行：
+集成测试必须配置独立的 `TEST_DATABASE_URL`，数据库名以 `_test` 结尾。测试会清空其中业务数据；缺少配置时明确跳过，绝不能指向开发或用户数据。所有默认测试不调用付费模型，模型替身只在测试入口注入。
+
+测试库名称还必须与 `DATABASE_URL` 指向的应用库不同，即使部署在不同服务器也不能同名；测试入口拒绝通过连接查询参数覆盖数据库地址。
+
+前端目录：
 
 ```powershell
 npm run build
-npm run preview
+npm run test:e2e
 ```
 
-构建产物位于 `frontend/dist/`，预览地址为 [构建预览](http://127.0.0.1:4173)。本地预览代理仍要求后端在 8000 端口运行。构建预览仅用于检查产物，不是部署方案。
+浏览器测试使用本机 Chrome 和 Edge，自动启动8001/5174端口的隔离服务，并清空测试库。不要与 Python 集成测试同时运行。运行结果位于忽略目录 `tests/results/`。
 
-当前测试验证健康检查、错误脱敏、输入边界、三类资源契约及原始验收规格一致性，不执行数据库或真实模型调用；业务测试、跨用户隔离、30条课程样例及真实协议验证均为后续工作。原文档DS样例实际为10条讲解、11条练习、9条导图，与其声明的各10条不一致，修订方式等待确认。
+迁移往返检查也只对独立测试库执行，且会清空测试数据：
 
-## 当前验证与限制
+```powershell
+uv run --locked python -m scripts.check_migrations
+```
 
-- 已配置 Python / Node 固定版本和依赖锁文件。
-- 骨架交付时已通过3项基础测试、Ruff静态/格式检查、Vue类型检查与正式构建；Alembic空历史命令可运行。2026-09-27增加契约后共54项测试通过，本次未修改前端。
-- 本地后端 `/health` 返回正常，前端返回HTTP 200，前端代理可访问后端；未配置数据库时 `/health/ready` 按预期返回HTTP 503。完整业务验收尚未开始。
-- 本次未连接真实 PostgreSQL，未验证 pgvector 服务端、数据库读写或迁移。
-- 本次未配置个人模型、嵌入模型或可信课程材料，未调用付费API。
-- Docker、服务器部署、备份策略和实际发布在系统可运行后确认。
+真实 DS01—DS30 验收脚本仅供已有模型、嵌入及费用额度后显式执行：
 
-## 团队与协作
+```powershell
+uv run --locked python -m scripts.run_course_acceptance --username YOUR_TEST_USER --acknowledge-costs
+```
 
-沿用原文档角色：陈志涵负责计划与需求，赵博龙负责后端，宇家宁负责前端，袁萱萱负责课程与内容质量，刘永兴负责配置与部署，沈超负责智能体与技术方案，黄俊杰负责测试。
+脚本交互读取密码，保留全部首次记录；人工合理性复核仍需另行完成。原始 Word/JSON 保持10讲解、11练习、9导图；用户已确认的执行集只调整 DS13，执行口径为各10条。
 
-后续按 Issue → 开发分支 → 自测 → 非作者评审 → 集成验证推进。不得提交 `.env`、数据库、用户材料、日志、虚拟环境、依赖目录及真实凭据。本次未创建远程仓库、分支或发布标签；相关任务保留在 plan.md。
+## 文档与剩余验收
+
+- [实现与接口说明](docs/design/implementation-v1.md)、[数据字典](docs/design/data-dictionary.md)、[OpenAPI](docs/design/openapi.json)
+- [用户手册](docs/manual/user-guide.md)、[运行与恢复手册](docs/manual/operations.md)
+- [首期测试报告](docs/test/implementation-phase2.md)、[需求与测试追踪](docs/test/coverage.md)
+- [逐项验收任务卡](tests/acceptance/tasks.yaml)、[页面编号映射](docs/design/page-mapping.md)、[未发布交付说明](docs/manual/delivery-notes.md)
+
+`uv run --locked python -m scripts.prepare_acceptance_tasks --check`核对98张验收任务卡；`uv run --locked python -m scripts.check_delivery`检查可共享文本/构建包是否含已配置密钥，并生成本地内容指纹清单。这些检查不调用模型，也不代替实际课程质量和人工验收。
+
+当前没有正式部署/发布标签，不代签团队评审和第二名成员复现。真实模型连通与DS30质量、第二门课程、课程材料复核、生产容量/数据保留/HTTPS配置及正式验收仍未完成。S12个人上传和S13可选功能按本轮确认留待后续讨论。详见 plan.md 中未勾选项及阻塞说明。
