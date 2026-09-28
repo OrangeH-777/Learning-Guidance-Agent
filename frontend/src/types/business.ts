@@ -1,4 +1,4 @@
-export interface User { id: string; username: string }
+export interface User { id: string; username: string; is_admin: boolean }
 export interface Course { id: string; name: string; description: string; enabled: boolean; knowledge_ready: boolean }
 export interface ProfileFields { knowledge_base: string; learning_goal: string; preference: string }
 export interface Profile { version: number; fields: ProfileFields | null }

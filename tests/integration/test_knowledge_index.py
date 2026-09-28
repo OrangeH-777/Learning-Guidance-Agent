@@ -2,6 +2,7 @@ import pytest
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from agents.retrieval.catalog import read_course
 from agents.retrieval.indexing import chunks, index_course
 from agents.retrieval.vector import search
 from backend.app.core.config import PROJECT_ROOT
@@ -12,7 +13,7 @@ from tests.integration.test_generation_flow import FakeEmbedder
 async def test_repeat_index_and_new_model_version_preserve_old_sources(app, test_engine):
     with Session(test_engine) as db:
         course = db.get(Course, "data_structure")
-        course.content_version = "ds-notes-v1"
+        course.content_version = read_course(PROJECT_ROOT / "knowledge/data_structure").version
         db.commit()
     directory = PROJECT_ROOT / "knowledge/data_structure"
     with pytest.raises(ValueError, match="review"):
@@ -121,7 +122,9 @@ async def test_concurrent_builders_cannot_mix_models_under_one_index_version(app
     import asyncio
 
     with Session(test_engine) as db, db.begin():
-        db.get(Course, "data_structure").content_version = "ds-notes-v1"
+        db.get(Course, "data_structure").content_version = read_course(
+            PROJECT_ROOT / "knowledge/data_structure"
+        ).version
 
     class RacingEmbedder(FakeEmbedder):
         async def embed(self, texts, *, timeout_seconds):

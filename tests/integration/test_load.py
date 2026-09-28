@@ -68,9 +68,23 @@ def test_ten_sessions_hundred_resources_hundred_non_generation_requests(client, 
 
     def requests(browser):
         results = []
+        profile_version = 0
         for index in range(10):
             start = time.perf_counter()
-            response = browser.get("/api/resources" if index % 2 else "/api/courses")
+            if index % 3 == 2:
+                response = browser.put(
+                    "/api/courses/data_structure/profile",
+                    json={
+                        "knowledge_base": "已有数组基础",
+                        "learning_goal": f"学习栈{index}",
+                        "preference": "示例",
+                        "expected_version": profile_version,
+                    },
+                )
+                if response.status_code == 200:
+                    profile_version = response.json()["version"]
+            else:
+                response = browser.get("/api/resources" if index % 2 else "/api/courses")
             results.append((time.perf_counter() - start, response.status_code))
         return results
 
@@ -110,6 +124,8 @@ def test_ten_sessions_hundred_resources_hundred_non_generation_requests(client, 
         "p95_seconds": latencies[math.ceil(0.95 * len(latencies)) - 1],
         "server_errors": errors,
         "model_calls": 0,
+        "query_requests": 70,
+        "profile_write_requests": 30,
         "peak_database_connections_including_scheduler": peak_connections,
         "connections_after_requests": engine.pool.checkedout(),
         "pool_size": engine.pool.size(),

@@ -162,6 +162,9 @@ def test_end_to_end_with_real_postgres_and_explicit_model_double(client, app, te
     assert accepted.status_code == 202, accepted.text
     task = wait_task(client, accepted.json()["id"])
     assert task["status"] == "completed", task
+    assert task["telemetry"]["model_attempts"] == 4
+    assert task["content_regenerations"] == 0
+    assert "test-secret" not in json.dumps(task)
     resource = client.get(f"/api/resources/{task['resource_id']}").json()
     assert resource["content"]["resource_type"] == kind
     assert resource["human_pass"] is False and "由AI生成" in resource["notice"]

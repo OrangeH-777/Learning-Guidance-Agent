@@ -2,6 +2,7 @@
 
 import argparse
 import getpass
+import hashlib
 import json
 import time
 from datetime import UTC, datetime
@@ -23,6 +24,19 @@ def main():
             "This run makes billable calls. Configure an approved quota, "
             "then explicitly acknowledge costs."
         )
+    endpoint = httpx.URL(args.base_url)
+    if (
+        endpoint.userinfo
+        or endpoint.query
+        or endpoint.fragment
+        or (
+            endpoint.scheme != "https"
+            and not (
+                endpoint.scheme == "http" and endpoint.host in {"127.0.0.1", "localhost", "::1"}
+            )
+        )
+    ):
+        raise SystemExit("Use an HTTPS application URL, or HTTP on loopback; no URL credentials")
     cases = json.loads(
         (PROJECT_ROOT / "tests/fixtures/acceptance_execution.json").read_text(encoding="utf-8")
     )["course_cases"]
@@ -34,10 +48,21 @@ def main():
         "mode": "real_configured_service",
         "expected_first_attempts": 30,
         "manual_review": "not_performed",
+        "local_artifact_sha256": {
+            name: hashlib.sha256((PROJECT_ROOT / name).read_bytes()).hexdigest()
+            for name in (
+                "uv.lock",
+                "frontend/package-lock.json",
+                "tests/fixtures/acceptance_execution.json",
+            )
+        },
         "cases": [],
     }
     with httpx.Client(
-        base_url=args.base_url.rstrip("/") + "/api/", timeout=15, follow_redirects=False
+        base_url=args.base_url.rstrip("/") + "/api/",
+        timeout=15,
+        follow_redirects=False,
+        trust_env=False,
     ) as client:
         response = client.post(
             "auth/login",
@@ -47,8 +72,12 @@ def main():
             raise SystemExit("Login failed; provider or credential details are not displayed")
         client.headers["X-CSRF-Token"] = response.json()["csrf_token"]
         try:
-            profile = client.get("courses/data_structure/profile").json()
-            model = client.get("model-settings").json()
+            profile_response = client.get("courses/data_structure/profile")
+            profile_response.raise_for_status()
+            profile = profile_response.json()
+            model_response = client.get("model-settings")
+            model_response.raise_for_status()
+            model = model_response.json()
             if not profile.get("version") or not model.get("tested_at"):
                 raise SystemExit("Confirm a learning profile and test the personal model first")
             # Fixed inputs are recorded per case; failures are never removed/replaced.
@@ -61,6 +90,10 @@ def main():
                     "status": "not_submitted",
                     "learner_level": case["learner_level"],
                     "human_pass": None,
+                    "course_id": case["course_id"],
+                    "topic": case["request"],
+                    "started_at": datetime.now(UTC).isoformat(),
+                    "model": {key: model[key] for key in ("version", "protocol", "model_id")},
                 }
                 report["cases"].append(entry)
                 output.write_text(
@@ -79,6 +112,7 @@ def main():
                     )
                     updated.raise_for_status()
                     profile = updated.json()
+                    entry["profile"] = profile
                     payload = {
                         "course_id": "data_structure",
                         "topic": case["request"],
@@ -105,9 +139,26 @@ def main():
                             status=task["status"],
                             resource_id=task.get("resource_id"),
                             error_code=task.get("error_code"),
+                            accepted_at=task["created_at"],
+                            deadline_at=task["deadline_at"],
+                            finished_at=task.get("finished_at"),
+                            content_regenerations=task["content_regenerations"],
+                            knowledge_version=task["knowledge_version"],
+                            prompt_version=task["prompt_version"],
+                            telemetry=task["telemetry"],
                         )
+                        if task["status"] == "completed":
+                            resource = client.get("resources/" + task["resource_id"])
+                            resource.raise_for_status()
+                            entry["resource"] = resource.json()
                 except httpx.HTTPError:
-                    entry["status"] = "connection_error"
+                    if entry["status"] not in {"completed", "failed", "rejected"}:
+                        entry["status"] = "connection_error"
+                    entry["observation_error"] = "connection_error"
+                except (ValueError, KeyError, TypeError):
+                    if entry["status"] not in {"completed", "failed", "rejected"}:
+                        entry["status"] = "protocol_error"
+                    entry["observation_error"] = "protocol_error"
                 finally:
                     entry["elapsed_seconds"] = round(time.monotonic() - started, 3)
                     output.write_text(
@@ -115,7 +166,10 @@ def main():
                     )
                 print(f"{case['id']}: {entry['status']}")
         finally:
-            client.post("auth/logout")
+            try:
+                client.post("auth/logout")
+            except httpx.HTTPError:
+                print("Logout was not confirmed; restore connectivity and revoke the test session.")
     print(f"Saved {output.name}; human quality review remains required.")
 
 

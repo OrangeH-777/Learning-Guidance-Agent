@@ -3,8 +3,11 @@
 import os
 import subprocess
 import sys
+from pathlib import Path
+from tempfile import TemporaryDirectory
 
 import uvicorn
+import yaml
 from cryptography.fernet import Fernet
 from dotenv import dotenv_values
 from pydantic import SecretStr
@@ -15,6 +18,7 @@ from backend.app.core.config import PROJECT_ROOT, Settings
 from backend.app.db.base import Base
 from backend.app.db.models import Course, KnowledgeChunk, KnowledgeDocument
 from backend.app.main import create_app
+from scripts.bootstrap_admin import bootstrap_admin
 from scripts.test_database import require_test_database
 from tests.integration.test_generation_flow import FakeEmbedder, FakeProvider
 
@@ -41,6 +45,15 @@ def main():
         names = ", ".join('"' + table.name + '"' for table in Base.metadata.sorted_tables)
         connection.execute(text(f"TRUNCATE {names} CASCADE"))
     with Session(engine) as db:
+        db.add(
+            Course(
+                id="upload_course",
+                name="上传专用测试课程",
+                description="TEST ONLY",
+                enabled=True,
+                content_version="fixture",
+            )
+        )
         db.add(
             Course(
                 id="test_course",
@@ -87,18 +100,58 @@ def main():
             )
         )
         db.commit()
-    engine.dispose()
+    knowledge = TemporaryDirectory(prefix="lga-browser-knowledge-")
+    for course_id in ("data_structure", "test_course", "upload_course"):
+        directory = Path(knowledge.name) / course_id
+        directory.mkdir()
+        (directory / "chapter.md").write_text("# 栈\n\n栈采用后进先出。", encoding="utf-8")
+        (directory / "course.yaml").write_text(
+            yaml.safe_dump(
+                {
+                    "id": course_id,
+                    "name": course_id,
+                    "description": "TEST ONLY",
+                    "version": "fixture",
+                    "enabled": True,
+                    "maintainer": "test",
+                    "topics": ["栈"],
+                    "prerequisites": [],
+                    "sources": [
+                        {
+                            "id": "fixture",
+                            "title": "测试教材",
+                            "file": "chapter.md",
+                            "source_url": "https://example.org/test",
+                            "section": "第一章",
+                            "license": "test only",
+                            "version": "fixture",
+                            "review_status": "approved",
+                        }
+                    ],
+                },
+                allow_unicode=True,
+            ),
+            encoding="utf-8",
+        )
     settings = Settings(
         _env_file=None,
         database_url=SecretStr(url),
         model_credential_encryption_key=SecretStr(Fernet.generate_key().decode()),
         embedding_index_version="fixture-index",
         allowed_origins=["http://127.0.0.1:5174"],
+        public_knowledge_dir=knowledge.name,
+        admin_username="browser_admin",
+        admin_password="BrowserAdmin123",
     )
+    bootstrap_admin(engine, settings)
+    engine.dispose()
     app = create_app(settings)
     app.state.provider_factory = lambda configuration, settings: FakeProvider()
     app.state.embedder_factory = lambda settings: FakeEmbedder()
-    uvicorn.run(app, host="127.0.0.1", port=8001)
+    try:
+        uvicorn.run(app, host="127.0.0.1", port=8001)
+    finally:
+        knowledge.cleanup()
 
 
 if __name__ == "__main__":

@@ -19,11 +19,11 @@ def test_every_business_operation_documents_success_and_safe_errors():
             for code, response in operation["responses"].items():
                 if code.startswith("2") and code != "204":
                     assert response["content"]["application/json"]["schema"], path
-                if code in {"401", "403", "404", "409", "422", "429", "500", "502", "503"}:
+                if code in {"401", "403", "404", "409", "413", "422", "429", "500", "502", "503"}:
                     assert response["content"]["application/json"]["schema"] == {
                         "$ref": "#/components/schemas/ErrorResponse"
                     }
-    assert operations == 20
+    assert operations == 27
 
 
 def test_invalid_internal_response_never_exposes_private_data(caplog):

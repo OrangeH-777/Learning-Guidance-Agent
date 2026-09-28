@@ -1,21 +1,23 @@
 from datetime import UTC, datetime
 
-from fastapi import APIRouter, Depends, Request
-from sqlalchemy import select
+from fastapi import APIRouter, Depends, Query, Request
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from agents.providers.http import validate_base_url
-from agents.schemas.models import ModelMessage, ModelRequest
+from agents.schemas.models import ModelFailure, ModelMessage, ModelRequest
 from backend.app.api.dependencies import current_user, database
 from backend.app.core.errors import AppError
 from backend.app.db.models import ModelConfiguration, User
 from backend.app.schemas.business import ModelConfigurationInput
 from backend.app.schemas.responses import (
     MissingModelResponse,
+    ModelHistoryResponse,
     ModelTestResponse,
     SavedModelResponse,
 )
 from backend.app.services.models import (
+    call_model_once,
     cipher,
     latest_model,
     model_public,
@@ -28,6 +30,30 @@ router = APIRouter(prefix="/model-settings", tags=["model-settings"])
 @router.get("", response_model=MissingModelResponse | SavedModelResponse)
 def get_model(user: User = Depends(current_user), db: Session = Depends(database)):
     return model_public(latest_model(db, user.id))
+
+
+@router.get("/history", response_model=ModelHistoryResponse)
+def model_history(
+    user: User = Depends(current_user),
+    db: Session = Depends(database),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=10, ge=1, le=50),
+):
+    owned = ModelConfiguration.user_id == user.id
+    total = db.scalar(select(func.count()).select_from(ModelConfiguration).where(owned))
+    records = db.scalars(
+        select(ModelConfiguration)
+        .where(owned)
+        .order_by(ModelConfiguration.version.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
+    return {
+        "items": [{**model_public(record), "created_at": record.created_at} for record in records],
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+    }
 
 
 @router.put("", response_model=SavedModelResponse)
@@ -96,13 +122,19 @@ async def test_model(
     config_id = config.id
     # End the request transaction before external I/O.
     db.commit()
-    await provider.generate(
-        ModelRequest(
-            selection=selection,
-            messages=(ModelMessage(role="user", content="请仅回复 OK，用于连接测试。"),),
-        ),
-        timeout_seconds=60,
-    )
+    try:
+        await call_model_once(
+            provider,
+            ModelRequest(
+                selection=selection,
+                messages=(ModelMessage(role="user", content="请仅回复 OK，用于连接测试。"),),
+            ),
+            request.app.state.settings.model_call_timeout_seconds,
+        )
+    except ModelFailure:
+        db.get(ModelConfiguration, config_id).tested_at = None
+        db.commit()
+        raise
     persisted = db.get(ModelConfiguration, config_id)
     persisted.tested_at = datetime.now(UTC)
     db.commit()

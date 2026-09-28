@@ -36,6 +36,7 @@ class User(Identity, Base):
     __table_args__ = (CheckConstraint("username = lower(username)", name="username_lower"),)
     username: Mapped[str] = mapped_column(String(20), unique=True)
     password_hash: Mapped[str] = mapped_column(Text)
+    is_admin: Mapped[bool] = mapped_column(Boolean, default=False, server_default=text("false"))
 
 
 class LoginSession(Identity, Base):

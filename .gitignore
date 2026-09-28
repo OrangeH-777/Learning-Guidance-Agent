@@ -39,3 +39,6 @@ dist/
 .vscode/
 .DS_Store
 Thumbs.db
+# Administrator index job status contains runtime state, not course source content.
+knowledge/.admin-index-job.json
+knowledge/.admin-index-job.tmp

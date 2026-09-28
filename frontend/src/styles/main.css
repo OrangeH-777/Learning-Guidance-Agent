@@ -10,6 +10,13 @@ button:hover { filter: brightness(.94); }
 button:disabled { opacity: .5; cursor: not-allowed; }
 input, select, textarea { display: block; width: 100%; border: 1px solid #cbd5cd; border-radius: 8px; background: #fcfdfb; padding: 11px 13px; color: #233c35; margin-top: 7px; }
 textarea { resize: vertical; }
+input, select, textarea, .panel, .grid > *, .history-grid > * { min-width: 0; }
+p, h1, h2, h3, .notice, .error, .success { overflow-wrap: anywhere; }
+[tabindex="-1"] { scroll-margin-top: 24px; }
+[tabindex="-1"]:focus { outline: none; }
+button, a, input, select, textarea { transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease; }
+button:not(:disabled):active { filter: brightness(.9); }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; } }
 label { display: block; font-weight: 600; margin-bottom: 22px; }
 small { font-weight: 400; }
 label small { display: block; margin-top: 5px; color: #6b7c75; }
@@ -23,7 +30,7 @@ h2 { font-size: 1.35rem; } h3 { font-size: 1.1rem; }
 .app-header { display: flex; gap: 30px; align-items: center; padding: 20px 32px; background: #fff; border-bottom: 1px solid #dce3da; }
 .brand { font-size: 1.55rem; font-weight: 750; white-space: nowrap; }
 .brand small { font-size: .76rem; margin-left: 8px; color: #6d7c71; }
-.app-header nav { display: flex; gap: 25px; flex: 1; margin-left: 24px; }
+.app-header nav { display: flex; flex-wrap: wrap; gap: 14px 25px; flex: 1; margin-left: 24px; }
 .app-header nav a { color: #62736b; font-size: .93rem; }
 .app-header nav .router-link-exact-active { color: #236850; font-weight: 700; }
 .account { display: flex; align-items: center; gap: 14px; font-size: .9rem; }
@@ -60,9 +67,10 @@ footer { font-size: .8rem; }
 .history-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
 .pagination { margin-top: 24px; }
 .loading { color: #718174; padding: 20px; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 @media(max-width: 850px) {
   .app-header { flex-wrap: wrap; gap: 12px; padding: 16px; }
-  .app-header nav { order: 3; margin: 0; flex: 0 0 100%; gap: 20px; overflow: auto; }
+  .app-header nav { order: 3; margin: 0; flex: 0 0 100%; gap: 10px 20px; flex-wrap: wrap; }
   .app-header nav a { white-space: nowrap; flex-shrink: 0; }
   .account { margin-left: auto; } .brand small { display: none; } .container { padding: 20px; }
   .grid, .auth-layout, .history-grid { grid-template-columns: 1fr; }

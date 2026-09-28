@@ -11,6 +11,7 @@ from backend.app.core.errors import register_error_handlers
 from backend.app.db.session import create_database_engine
 from backend.app.services.generation import generate_resource
 from backend.app.services.knowledge import embedder_for
+from backend.app.services.public_knowledge import PublicKnowledgeManager
 from backend.app.tasks.executor import TaskExecutor
 
 
@@ -21,6 +22,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         application.state.settings = resolved_settings
         engine = create_database_engine(resolved_settings)
         application.state.database_engine = engine
+        application.state.public_knowledge = PublicKnowledgeManager(
+            engine, resolved_settings, lambda config: application.state.embedder_factory(config)
+        )
         executor = None
         if engine is not None:
             from sqlalchemy.exc import SQLAlchemyError
@@ -39,6 +43,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         try:
             yield
         finally:
+            await application.state.public_knowledge.close()
             if executor is not None:
                 await executor.close()
             if engine is not None:

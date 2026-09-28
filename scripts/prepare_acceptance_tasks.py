@@ -97,7 +97,7 @@ def build_tasks():
                     "supporting_commands": commands,
                     "steps": [
                         "按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。",
-                        "逐项比对expected；DS按request、expected_points及原始评分规则复核。",
+                        "逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。",
                         "记录失败、task_id与证据；重试追加记录，不替换首次结果。",
                     ],
                     "execution_status": "not_run",

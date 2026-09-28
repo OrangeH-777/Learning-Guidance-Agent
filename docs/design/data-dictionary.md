@@ -19,6 +19,7 @@
 | --- | --- | --- | --- | --- |
 | username | VARCHAR(20) | False | False | — |
 | password_hash | TEXT | False | False | — |
+| is_admin | BOOLEAN | False | False | — |
 | id | CHAR(32) | False | True | — |
 | created_at | DATETIME | False | False | — |
 

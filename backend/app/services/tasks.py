@@ -32,6 +32,10 @@ def task_public(task: GenerationTask, resource_id=None) -> dict:
         "error_code": task.error_code,
         "parent_task_id": task.parent_task_id,
         "resource_id": resource_id,
+        "content_regenerations": task.content_regenerations,
+        "knowledge_version": task.knowledge_version,
+        "prompt_version": task.prompt_version,
+        "telemetry": task.telemetry or None,
     }
 
 

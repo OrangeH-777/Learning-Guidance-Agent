@@ -23,6 +23,8 @@ class Settings(BaseSettings):
     model_credential_previous_keys: list[str] = Field(default_factory=list, repr=False)
     session_ttl_seconds: int = Field(default=7200, ge=60, le=86400)
     cookie_secure: bool = False
+    admin_username: str = ""
+    admin_password: SecretStr = SecretStr("")
     allowed_origins: list[str] = [
         "http://127.0.0.1:5173",
         "http://localhost:5173",

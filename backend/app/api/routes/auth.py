@@ -51,7 +51,11 @@ def start_session(request: Request, response: Response, db: Session, user: User)
         path="/",
     )
     response.headers["Cache-Control"] = "no-store"
-    return {"user": {"id": str(user.id), "username": user.username}, "csrf_token": csrf}
+    return {"user": user_public(user), "csrf_token": csrf}
+
+
+def user_public(user: User):
+    return {"id": str(user.id), "username": user.username, "is_admin": user.is_admin}
 
 
 @router.post("/register", status_code=201, response_model=SessionResponse)
@@ -62,6 +66,9 @@ def register(
     db: Session = Depends(database),
 ):
     verify_origin(request)
+    reserved = request.app.state.settings.admin_username.lower()
+    if reserved and payload.username == reserved:
+        raise AppError(409, "USERNAME_TAKEN", "该账号已被使用")
     user = User(
         username=payload.username, password_hash=hash_password(payload.password.get_secret_value())
     )
@@ -94,7 +101,7 @@ def session(
     login: LoginSession = Depends(current_session),
 ):
     response.headers["Cache-Control"] = "no-store"
-    return {"user": {"id": str(user.id), "username": user.username}, "csrf_token": login.csrf_token}
+    return {"user": user_public(user), "csrf_token": login.csrf_token}
 
 
 @router.post("/logout", status_code=204)

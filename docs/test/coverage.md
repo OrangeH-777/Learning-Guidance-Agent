@@ -57,3 +57,13 @@ IT01—08继续按原始规格执行，现有可复用证据分别来自认证/�
 每个成功资源人工记录：主题、结构、难度、事实、答案解析/逻辑关系；各项判定、依据、复核者、日期和问题。仅全部适用维度通过才计human_pass；不得由模型或脚本自动签署人工通过。
 
 首次成功率分母固定30，目标90%；合理性分母为首次成功资源数，目标90%，无成功资源时记不适用。各类型独立统计，新课程单列，不混入数据结构分母。当前真实测量值全部为“未执行”。
+
+
+## 新增管理员公共教材（CR09 / S14）
+
+对应bootstrap_admin.py、admin.py、material_text.py、public_knowledge.py和MaterialsView.vue；测试为test_material_text.py、test_admin_materials.py、admin-materials.spec.ts。覆盖角色/CSRF、三格式提取、文件边界与解析失败、显式确认、课程版本冲突、文件恢复、索引失败/历史保留和配置族隔离。原IT/TC任务编号不改变，不将新增21项自动化测试冒写为原任务全部通过。对应使用说明为docs/manual/public-materials.md。
+
+
+## 个人配置历史与交互补充（S15）
+
+GET /model-settings/history使用现有不可变配置版本，鉴权后按user_id过滤。test_model_history.py覆盖显式模型凭据、无登录默认值、本人分页、查询参数越权拒绝、密钥不回显及移除版本。learning.spec.ts校验新用户空字段、保存/刷新后的密钥清空、历史显示和390px布局；admin-materials.spec.ts覆盖平滑定位/焦点、减少动态效果、清空正文、未保存切换保护与旧版本拒绝。物理分表的含义仍待确认。

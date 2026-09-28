@@ -16,7 +16,7 @@ async function logout() {
   <div class="app-layout">
     <header class="app-header">
       <RouterLink class="brand" to="/">知学 <small>学习资源工作台</small></RouterLink>
-      <nav aria-label="主导航"><RouterLink to="/">工作台</RouterLink><RouterLink to="/profile">学习画像</RouterLink><RouterLink to="/models">模型设置</RouterLink><RouterLink to="/history">学习历史</RouterLink></nav>
+      <nav aria-label="主导航"><RouterLink to="/">工作台</RouterLink><RouterLink to="/profile">学习画像</RouterLink><RouterLink to="/models">模型设置</RouterLink><RouterLink to="/history">学习历史</RouterLink><RouterLink v-if="session.user?.is_admin" to="/admin/materials">公共教材管理</RouterLink></nav>
       <div class="account"><span>{{ session.user?.username }}</span><button class="secondary" :disabled="busy" @click="logout">退出</button></div>
     </header>
     <p v-if="error" class="error container" role="alert">{{ error }}</p>

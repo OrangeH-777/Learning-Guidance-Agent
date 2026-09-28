@@ -6,7 +6,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from agents.schemas.models import ModelProtocol, ModelSelection
+from agents.schemas.models import ModelProtocol, ModelSelection, ModelUsage
 from agents.schemas.resources import ResourceDraft
 from agents.schemas.workflow import ProfileSnapshot
 from backend.app.schemas.inputs import ProfileFields, ProfileText
@@ -22,6 +22,7 @@ class PublicResponse(BaseModel):
 class UserResponse(PublicResponse):
     id: UUID
     username: str
+    is_admin: bool
 
 
 class SessionResponse(PublicResponse):
@@ -79,6 +80,34 @@ class ModelTestResponse(PublicResponse):
     version: int = Field(ge=1)
 
 
+class ModelHistoryItem(SavedModelResponse):
+    created_at: datetime
+
+
+class ModelHistoryResponse(PublicResponse):
+    items: list[ModelHistoryItem]
+    total: int = Field(ge=0)
+    page: int = Field(ge=1)
+    page_size: int = Field(ge=1, le=50)
+
+
+class NodeTiming(PublicResponse):
+    node: TaskStatus
+    elapsed_seconds: float = Field(ge=0)
+
+
+class TaskTelemetryResponse(PublicResponse):
+    task_id: UUID
+    protocol: ModelProtocol
+    model_id: str
+    knowledge_version: str
+    prompt_version: str
+    nodes: list[NodeTiming]
+    model_attempts: int = Field(ge=0)
+    transport_retries: int = Field(ge=0)
+    usage: list[ModelUsage]
+
+
 class TaskResponse(PublicResponse):
     id: UUID
     course_id: str
@@ -92,6 +121,10 @@ class TaskResponse(PublicResponse):
     error_code: str | None
     parent_task_id: UUID | None
     resource_id: UUID | None
+    content_regenerations: int = Field(ge=0, le=2)
+    knowledge_version: str
+    prompt_version: str
+    telemetry: TaskTelemetryResponse | None
 
 
 class ResourceMetadata(PublicResponse):

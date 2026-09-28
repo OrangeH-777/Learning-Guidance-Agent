@@ -2,7 +2,8 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from agents.providers.http import HttpModelProvider, SafeTransport
-from agents.schemas.models import ModelSelection
+from agents.schemas.models import ModelErrorCode, ModelFailure, ModelSelection
+from agents.workflows.runtime import Deadline, ModelCallRunner, TaskDeadlineExceeded
 from backend.app.core.config import Settings
 from backend.app.core.errors import AppError
 from backend.app.core.security import CredentialCipher
@@ -43,6 +44,19 @@ def selection_for(configuration: ModelConfiguration) -> ModelSelection:
         protocol=configuration.protocol,
         model_id=configuration.model_id,
     )
+
+
+async def call_model_once(provider, request, timeout_seconds):
+    """One absolute budget for interactive calls; per-read HTTP timeouts are insufficient."""
+    runner = ModelCallRunner(
+        Deadline(timeout_seconds), call_timeout_seconds=timeout_seconds, transport_retry_limit=0
+    )
+    try:
+        return await runner.call(
+            lambda remaining: provider.generate(request, timeout_seconds=remaining)
+        )
+    except TaskDeadlineExceeded:
+        raise ModelFailure(ModelErrorCode.TIMEOUT) from None
 
 
 def model_public(configuration: ModelConfiguration | None) -> dict:

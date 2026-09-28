@@ -1,3 +1,6 @@
+import hashlib
+import re
+
 from sqlalchemy.orm import Session
 
 from agents.providers.http import SafeTransport
@@ -36,7 +39,7 @@ async def retrieve_context(
     embedder_factory=embedder_for,
 ):
     embedder = embedder_factory(settings)
-    if context.knowledge_version != settings.embedding_index_version:
+    if not compatible_index(context.knowledge_version, settings):
         raise AppError(409, "INDEX_VERSION_UNAVAILABLE", "原任务使用的嵌入索引版本当前不可用")
     runner = ModelCallRunner(
         deadline,
@@ -61,3 +64,17 @@ async def retrieve_context(
     if not fragments:
         raise AppError(409, "NO_KNOWLEDGE", "没有检索到匹配材料，请调整主题或补充课程资料")
     return fragments
+
+
+def web_index_prefix(settings: Settings) -> str:
+    # One configured embedding family, separate immutable revisions for each course.
+    digest = hashlib.sha256(settings.embedding_index_version.encode()).hexdigest()[:32]
+    return f"web-{digest}-"
+
+
+def compatible_index(version: str | None, settings: Settings) -> bool:
+    if not version or not settings.embedding_index_version:
+        return False
+    return version == settings.embedding_index_version or bool(
+        re.fullmatch(re.escape(web_index_prefix(settings)) + r"[0-9a-f]{32}", version)
+    )

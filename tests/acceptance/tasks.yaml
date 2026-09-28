@@ -15,7 +15,7 @@ tasks:
   - uv run --locked pytest -q tests/integration
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -40,7 +40,7 @@ tasks:
   - uv run --locked pytest -q tests/integration
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -65,7 +65,7 @@ tasks:
   - uv run --locked pytest -q tests/integration
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -91,7 +91,7 @@ tasks:
   - uv run --locked pytest -q tests/integration
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -116,7 +116,7 @@ tasks:
   - uv run --locked pytest -q tests/integration
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -141,7 +141,7 @@ tasks:
   - uv run --locked pytest -q tests/integration
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -166,7 +166,7 @@ tasks:
   - uv run --locked pytest -q tests/integration
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -191,7 +191,7 @@ tasks:
   - uv run --locked pytest -q tests/integration
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -217,7 +217,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_input_contracts.py tests/integration/test_accounts_profiles.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -243,7 +243,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_input_contracts.py tests/integration/test_accounts_profiles.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -269,7 +269,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_input_contracts.py tests/integration/test_accounts_profiles.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -295,7 +295,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_input_contracts.py tests/integration/test_accounts_profiles.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -321,7 +321,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_input_contracts.py tests/integration/test_accounts_profiles.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -347,7 +347,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_input_contracts.py tests/integration/test_accounts_profiles.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -374,7 +374,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_input_contracts.py tests/integration/test_generation_flow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -401,7 +401,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_input_contracts.py tests/integration/test_generation_flow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -427,7 +427,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_input_contracts.py tests/integration/test_generation_flow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -453,7 +453,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_input_contracts.py tests/integration/test_generation_flow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -479,7 +479,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_input_contracts.py tests/integration/test_generation_flow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -505,7 +505,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_input_contracts.py tests/integration/test_generation_flow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -531,7 +531,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_input_contracts.py tests/integration/test_generation_flow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -558,7 +558,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_input_contracts.py tests/integration/test_generation_flow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -584,7 +584,7 @@ tasks:
   - uv run --locked pytest -q tests/integration/test_generation_flow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -610,7 +610,7 @@ tasks:
   - uv run --locked pytest -q tests/integration/test_generation_flow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -637,7 +637,7 @@ tasks:
   - uv run --locked pytest -q tests/integration/test_generation_flow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -664,7 +664,7 @@ tasks:
   - uv run --locked pytest -q tests/integration/test_generation_flow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -690,7 +690,7 @@ tasks:
   - uv run --locked pytest -q tests/integration/test_generation_flow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -717,7 +717,7 @@ tasks:
   - uv run --locked pytest -q tests/integration/test_generation_flow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -744,7 +744,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_resource_contracts.py tests/unit/test_learning_workflow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -771,7 +771,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_resource_contracts.py tests/unit/test_learning_workflow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -798,7 +798,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_resource_contracts.py tests/unit/test_learning_workflow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -824,7 +824,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_resource_contracts.py tests/unit/test_learning_workflow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -851,7 +851,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_resource_contracts.py tests/unit/test_learning_workflow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -877,7 +877,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_resource_contracts.py tests/unit/test_learning_workflow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -904,7 +904,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_resource_contracts.py tests/unit/test_learning_workflow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -930,7 +930,7 @@ tasks:
   - uv run --locked pytest -q tests/contract/test_resource_contracts.py tests/unit/test_learning_workflow.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -956,7 +956,7 @@ tasks:
   - uv run --locked pytest -q tests/unit/test_task_runtime.py tests/integration/test_executor_failures.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -983,7 +983,7 @@ tasks:
   - cd frontend; npm run test:e2e
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1009,7 +1009,7 @@ tasks:
   - uv run --locked pytest -q tests/unit/test_task_runtime.py tests/integration/test_executor_failures.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1036,7 +1036,7 @@ tasks:
   - cd frontend; npm run test:e2e
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1062,7 +1062,7 @@ tasks:
   - uv run --locked pytest -q tests/unit/test_task_runtime.py tests/integration/test_executor_failures.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1088,7 +1088,7 @@ tasks:
   - uv run --locked pytest -q tests/unit/test_task_runtime.py tests/integration/test_executor_failures.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1114,7 +1114,7 @@ tasks:
   - uv run --locked pytest -q tests/unit/test_task_runtime.py tests/integration/test_executor_failures.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1140,7 +1140,7 @@ tasks:
   - uv run --locked pytest -q tests/unit/test_task_runtime.py tests/integration/test_executor_failures.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1166,7 +1166,7 @@ tasks:
   - uv run --locked pytest -q tests/unit/test_task_runtime.py tests/integration/test_executor_failures.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1192,7 +1192,7 @@ tasks:
   - uv run --locked pytest -q tests/unit/test_task_runtime.py tests/integration/test_executor_failures.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1218,7 +1218,7 @@ tasks:
   - uv run --locked pytest -q tests/unit/test_task_runtime.py tests/integration/test_executor_failures.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1244,7 +1244,7 @@ tasks:
   - uv run --locked pytest -q tests/integration/test_task_reliability.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1270,7 +1270,7 @@ tasks:
   - uv run --locked pytest -q tests/integration/test_task_reliability.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1296,7 +1296,7 @@ tasks:
   - uv run --locked pytest -q tests/integration/test_task_reliability.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1322,7 +1322,7 @@ tasks:
   - uv run --locked pytest -q tests/integration/test_task_reliability.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1348,7 +1348,7 @@ tasks:
   - uv run --locked pytest -q tests/integration/test_accounts_profiles.py tests/integration/test_output_security.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1374,7 +1374,7 @@ tasks:
   - uv run --locked pytest -q tests/integration/test_accounts_profiles.py tests/integration/test_output_security.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1401,7 +1401,7 @@ tasks:
   - cd frontend; npm run test:e2e
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1427,7 +1427,7 @@ tasks:
   - uv run --locked pytest -q tests/integration/test_accounts_profiles.py tests/integration/test_output_security.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1453,7 +1453,7 @@ tasks:
   - uv run --locked pytest -q tests/integration/test_task_reliability.py tests/integration/test_load.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1479,7 +1479,7 @@ tasks:
   - uv run --locked pytest -q tests/integration/test_task_reliability.py tests/integration/test_load.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1505,7 +1505,7 @@ tasks:
   - uv run --locked pytest -q tests/integration/test_task_reliability.py tests/integration/test_load.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1531,7 +1531,7 @@ tasks:
   - uv run --locked pytest -q tests/integration/test_task_reliability.py tests/integration/test_load.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1558,7 +1558,7 @@ tasks:
     tests/integration/test_output_security.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1585,7 +1585,7 @@ tasks:
     tests/integration/test_output_security.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1612,7 +1612,7 @@ tasks:
     tests/integration/test_output_security.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1640,7 +1640,7 @@ tasks:
     tests/integration/test_output_security.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1667,7 +1667,7 @@ tasks:
     tests/integration/test_output_security.py
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1694,7 +1694,7 @@ tasks:
   - cd frontend; npm run test:e2e
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1720,7 +1720,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1748,7 +1748,7 @@ tasks:
     --acknowledge-costs
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1775,7 +1775,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1804,7 +1804,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1833,7 +1833,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1862,7 +1862,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1891,7 +1891,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1920,7 +1920,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1949,7 +1949,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -1978,7 +1978,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2007,7 +2007,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2036,7 +2036,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2065,7 +2065,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2094,7 +2094,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2123,7 +2123,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2152,7 +2152,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2181,7 +2181,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2210,7 +2210,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2239,7 +2239,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2268,7 +2268,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2297,7 +2297,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2326,7 +2326,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2355,7 +2355,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2384,7 +2384,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2413,7 +2413,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2442,7 +2442,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2471,7 +2471,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2500,7 +2500,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2529,7 +2529,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2558,7 +2558,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2587,7 +2587,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2616,7 +2616,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:
@@ -2645,7 +2645,7 @@ tasks:
   supporting_commands: []
   steps:
   - 按specification中的全部输入逐值执行，记录实际结果；支持性测试不自动代替此步骤。
-  - 逐项比对expected；DS按request、expected_points及原始评分规则复核。
+  - 逐项比对expected；DS按request、knowledge_domain及原始评分规则复核。
   - 记录失败、task_id与证据；重试追加记录，不替换首次结果。
   execution_status: not_run
   record_fields:

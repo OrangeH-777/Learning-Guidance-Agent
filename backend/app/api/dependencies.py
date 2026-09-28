@@ -56,3 +56,9 @@ def verify_origin(request: Request) -> None:
         raise AppError(403, "CSRF_FAILED", "请求来源不受信任")
     if request.headers.get("Sec-Fetch-Site") == "cross-site":
         raise AppError(403, "CSRF_FAILED", "请求来源不受信任")
+
+
+def current_admin(user: User = Depends(current_user)) -> User:
+    if not user.is_admin:
+        raise AppError(403, "ADMIN_REQUIRED", "仅管理员可管理公共教材")
+    return user
