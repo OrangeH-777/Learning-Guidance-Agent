@@ -22,7 +22,7 @@ export const router = createRouter({
     { path: '/models', component: ModelsView },
     { path: '/history', component: HistoryView },
     { path: '/resources/:id', component: ResourceView },
-    { path: '/admin/materials', component: MaterialsView, meta: { admin: true } },
+    { path: '/admin/materials/:step(review)?', component: MaterialsView, meta: { admin: true } },
   ],
 })
 

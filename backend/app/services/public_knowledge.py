@@ -1,40 +1,71 @@
 """Administrator-managed canonical Markdown and versioned public indexes."""
 
 import asyncio
-from contextlib import suppress
 from uuid import uuid4
 
 import yaml
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from agents.retrieval.catalog import SourceEntry, read_course, read_source
-from agents.retrieval.indexing import index_course
+from agents.retrieval.catalog import CourseManifest, SourceEntry, read_course, read_source
 from backend.app.core.config import PROJECT_ROOT
 from backend.app.core.errors import AppError
 from backend.app.db.models import Course
-from backend.app.schemas.materials import IndexJob, MaterialSave
-from backend.app.services.knowledge import web_index_prefix
+from backend.app.schemas.materials import MaterialSave
 
 
 class PublicKnowledgeManager:
-    def __init__(self, engine, settings, embedder_factory):
-        self.engine, self.settings, self.embedder_factory = engine, settings, embedder_factory
+    def __init__(self, engine, settings):
+        self.engine = engine
         self.root = (PROJECT_ROOT / settings.public_knowledge_dir).resolve()
         self.lock = asyncio.Lock()
         self.preview_lock = asyncio.Lock()
-        self.task = None
-        self.job = None
-        self.state_file = self.root / ".admin-index-job.json"
-        if self.state_file.exists():
-            try:
-                self.job = IndexJob.model_validate_json(self.state_file.read_text(encoding="utf-8"))
-            except (ValueError, OSError):
-                self.job = None
-            if self.job and self.job.status == "running":
-                self.job.status = "interrupted"
-                self.job.error = "后端已重启，请核对课程状态后重新建立索引"
-                self.persist_job()
+
+    def create_course(self, payload, maintainer):
+        course_id = "course_" + uuid4().hex
+        manifest = CourseManifest(
+            id=course_id,
+            name=payload.name,
+            description=payload.description or payload.name,
+            maintainer=maintainer,
+            enabled=True,
+            version="v1",
+            topics=[payload.name],
+            prerequisites=[],
+            sources=[],
+        )
+        directory = self.root / course_id
+        directory.mkdir(parents=True, exist_ok=False)
+        catalog = directory / "course.yaml"
+        try:
+            with Session(self.engine) as db, db.begin():
+                if db.scalar(select(Course.id).where(Course.name == payload.name).limit(1)):
+                    raise AppError(409, "COURSE_EXISTS", "已有同名课程，请直接选择")
+                db.add(
+                    Course(
+                        id=course_id,
+                        name=manifest.name,
+                        description=manifest.description,
+                        enabled=True,
+                        content_version=manifest.version,
+                    )
+                )
+                db.flush()
+                catalog.write_text(
+                    yaml.safe_dump(manifest.model_dump(), allow_unicode=True, sort_keys=False),
+                    encoding="utf-8",
+                )
+        except Exception:
+            catalog.unlink(missing_ok=True)
+            directory.rmdir()
+            raise
+        return {
+            "id": course_id,
+            "name": manifest.name,
+            "version": manifest.version,
+            "active_index_version": None,
+            "sources": [],
+        }
 
     def directory(self, course_id):
         directory = (self.root / course_id).resolve()
@@ -137,74 +168,3 @@ class PublicKnowledgeManager:
         finally:
             staged.unlink(missing_ok=True)
         return {"source_id": source_id, "version": manifest.version}
-
-    def persist_job(self):
-        self.root.mkdir(parents=True, exist_ok=True)
-        temporary = self.state_file.with_suffix(".tmp")
-        temporary.write_text(self.job.model_dump_json(), encoding="utf-8")
-        temporary.replace(self.state_file)
-
-    async def start_index(self, course_id, payload):
-        if self.lock.locked():
-            raise AppError(409, "KNOWLEDGE_BUSY", "教材正在保存或建立索引，请稍后重试")
-        await self.lock.acquire()
-        try:
-            directory = self.directory(course_id)
-            manifest = read_course(directory)
-            if manifest.version != payload.expected_version:
-                raise AppError(409, "VERSION_CONFLICT", "课程教材已更新，请重新加载")
-            if not manifest.sources or (
-                not payload.allow_unreviewed
-                and any(s.review_status != "approved" for s in manifest.sources)
-            ):
-                raise AppError(
-                    409, "REVIEW_REQUIRED", "请先检查并确认全部教材，或明确选择本地未复核测试"
-                )
-            with Session(self.engine) as db:
-                course = db.get(Course, course_id)
-                if not course or not course.enabled or course.content_version != manifest.version:
-                    raise AppError(409, "VERSION_CONFLICT", "请先同步课程目录与数据库")
-            embedder = self.embedder_factory(self.settings)
-            self.job = IndexJob(
-                id=uuid4().hex,
-                course_id=course_id,
-                index_version=web_index_prefix(self.settings) + uuid4().hex,
-                status="running",
-            )
-            self.persist_job()
-            self.task = asyncio.create_task(
-                self.build(directory, embedder, payload.allow_unreviewed)
-            )
-            return self.job.model_copy()
-        except BaseException:
-            self.lock.release()
-            raise
-
-    async def build(self, directory, embedder, allow_unreviewed):
-        try:
-            async with asyncio.timeout(600):
-                result = await index_course(
-                    self.engine,
-                    directory,
-                    embedder,
-                    index_version=self.job.index_version,
-                    chunk_characters=self.settings.knowledge_chunk_characters,
-                    allow_unreviewed=allow_unreviewed,
-                )
-            self.job.status, self.job.chunks = result["status"], result["chunks"]
-        except asyncio.CancelledError:
-            self.job.status, self.job.error = "interrupted", "后端停止，索引未确认完成，请重新检查"
-        except Exception:
-            self.job.status = "failed"
-            self.job.error = "索引失败，请检查嵌入配置、网络、维度及课程版本后重试"
-        finally:
-            try:
-                self.persist_job()
-            finally:
-                self.lock.release()
-
-    async def close(self):
-        if self.task and not self.task.done():
-            self.task.cancel()
-            with suppress(asyncio.CancelledError):
-                await self.task

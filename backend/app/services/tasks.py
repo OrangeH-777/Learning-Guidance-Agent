@@ -3,7 +3,7 @@
 import hashlib
 import json
 from datetime import UTC, datetime, timedelta
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -75,9 +75,22 @@ def create_task(
         if existing.request_digest != digest:
             raise AppError(409, "IDEMPOTENCY_CONFLICT", "该请求标识已用于不同参数")
         return existing
-    course = require_course(db, payload.course_id)
-    if not course.active_index_version:
-        raise AppError(409, "KNOWLEDGE_NOT_READY", "课程知识索引尚未就绪")
+    require_course(db, payload.course_id)
+    if parent:
+        chapter = parent.chapter_snapshot
+    else:
+        from backend.app.services.chapters import reviewed_chapters
+
+        chapter = next(
+            (
+                c
+                for c in reviewed_chapters(settings, payload.course_id)
+                if c["id"] == payload.chapter_id
+            ),
+            None,
+        )
+    if not chapter:
+        raise AppError(409, "CHAPTER_REQUIRED", "请在工作台重新选择已校对的教材章节")
     profile = latest_profile(db, user_id, payload.course_id)
     model = latest_model(db, user_id)
     if parent is None:
@@ -111,7 +124,8 @@ def create_task(
         profile_version=payload.profile_version,
         profile_snapshot=snapshot,
         model_configuration_id=model.id,
-        knowledge_version=parent.knowledge_version if parent else course.active_index_version,
+        chapter_snapshot=chapter,
+        knowledge_version=parent.knowledge_version if parent else str(uuid4()),
         prompt_version=parent.prompt_version if parent else PROMPT_VERSION,
         created_at=accepted,
         deadline_at=accepted + timedelta(seconds=settings.task_timeout_seconds),

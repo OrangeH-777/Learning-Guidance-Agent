@@ -23,7 +23,7 @@ def test_every_business_operation_documents_success_and_safe_errors():
                     assert response["content"]["application/json"]["schema"] == {
                         "$ref": "#/components/schemas/ErrorResponse"
                     }
-    assert operations == 27
+    assert operations == 28
 
 
 def test_invalid_internal_response_never_exposes_private_data(caplog):

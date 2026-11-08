@@ -154,3 +154,23 @@ async def test_private_dns_is_blocked_before_sending_credentials(address):
 def test_unsafe_url_forms_are_rejected(url):
     with pytest.raises(ModelFailure):
         validate_base_url(url, [])
+
+
+@pytest.mark.parametrize(
+    "tag,expected,retry",
+    [
+        ("insufficient_quota", ModelErrorCode.QUOTA, False),
+        ("project_spend_limit_exceeded", ModelErrorCode.QUOTA, False),
+        ("rate_limit_exceeded", ModelErrorCode.THROTTLED, True),
+        ("unknown", ModelErrorCode.RATE_LIMIT, True),
+    ],
+)
+async def test_429_diagnostics(tag, expected, retry):
+    def handler(request):
+        return httpx.Response(429, json={"error": {"code": tag, "message": "private"}})
+
+    transport = SafeTransport([], resolver=public_dns, transport=httpx.MockTransport(handler))
+    with pytest.raises(ModelFailure) as err:
+        await transport.post("https://example.com/v1", headers={}, payload={}, timeout_seconds=1)
+    assert err.value.code == expected and err.value.retryable == retry
+    assert "private" not in str(err.value)

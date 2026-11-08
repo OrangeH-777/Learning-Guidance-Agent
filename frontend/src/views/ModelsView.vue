@@ -6,6 +6,17 @@ import type { ModelSettings } from '../types/business'
 const form = reactive({ protocol: 'chat_completions', base_url: '', model_id: '', api_key: '' })
 const settings = ref<ModelSettings>({ version: 0, configured: false }), busy = ref(true), message = ref(''), error = ref('')
 const revealKey = ref(false)
+const fromHistory = ref(false)
+const keyInput = ref<HTMLInputElement | null>(null)
+function fillHistory(entry: ConfigurationRecord) {
+  if (!entry.protocol || !entry.base_url || !entry.model_id) return
+  Object.assign(form, { protocol: entry.protocol, base_url: entry.base_url, model_id: entry.model_id, api_key: '' })
+  fromHistory.value = true
+  revealKey.value = false
+  error.value = ''
+  message.value = `已填入 v${entry.version} 的配置，请输入 API Key 后保存。`
+  keyInput.value?.focus()
+}
 interface ConfigurationRecord extends ModelSettings { created_at: string }
 const history = ref<ConfigurationRecord[]>([]), historyPage = ref(1), historyTotal = ref(0), historyBusy = ref(false), historyError = ref('')
 let historyRequest = 0
@@ -21,14 +32,15 @@ async function loadHistory(page = historyPage.value) {
   finally { if (request === historyRequest) historyBusy.value = false }
 }
 const savedFields = computed(() => settings.value.configured ? { protocol: settings.value.protocol ?? 'chat_completions', base_url: settings.value.base_url ?? '', model_id: settings.value.model_id ?? '' } : { protocol: 'chat_completions', base_url: '', model_id: '' })
-const hasUnsaved = computed(() => form.protocol !== savedFields.value.protocol || form.base_url !== savedFields.value.base_url || form.model_id !== savedFields.value.model_id || Boolean(form.api_key))
+const hasUnsaved = computed(() => fromHistory.value || form.protocol !== savedFields.value.protocol || form.base_url !== savedFields.value.base_url || form.model_id !== savedFields.value.model_id || Boolean(form.api_key))
 async function load() {
   settings.value = (await api.get('/model-settings')).data
+  fromHistory.value = false
   Object.assign(form, savedFields.value, { api_key: '' }); revealKey.value = false
 }
 async function save() {
   busy.value = true; error.value = ''; message.value = ''
-  try { settings.value = (await api.put('/model-settings', { ...form, api_key: form.api_key || null, expected_version: settings.value.version })).data; Object.assign(form, { protocol: settings.value.protocol, base_url: settings.value.base_url, model_id: settings.value.model_id, api_key: '' }); revealKey.value = false; message.value = '设置已保存，请完成连接测试后再生成。'; await loadHistory(1) }
+  try { settings.value = (await api.put('/model-settings', { ...form, api_key: form.api_key || null, expected_version: settings.value.version })).data; Object.assign(form, { protocol: settings.value.protocol, base_url: settings.value.base_url, model_id: settings.value.model_id, api_key: '' }); fromHistory.value = false; revealKey.value = false; message.value = '设置已保存，请完成连接测试后再生成。'; await loadHistory(1) }
   catch (e) { error.value = errorMessage(e) } finally { busy.value = false }
 }
 async function test() {
@@ -46,14 +58,14 @@ async function remove() {
 onMounted(() => { void load().catch(e => { error.value = errorMessage(e) }).finally(() => { busy.value = false }); void loadHistory() })
 </script>
 <template><AppShell>
-  <div class="page-heading"><p class="eyebrow">PERSONAL MODEL</p><h1>个人模型设置</h1><p class="muted">填写模型服务商提供的模型 ID 和 API Key，与本站登录账号、密码无关。配置仅属于你，密钥加密保存且不会回显。</p></div>
-  <form class="panel narrow" autocomplete="off" data-lpignore="true" data-1p-ignore @submit.prevent="save">
+  <div class="page-heading"><h1>个人模型设置</h1><p class="muted">填写模型服务商提供的模型 ID 和 API Key，与本站登录账号、密码无关。配置仅属于你，密钥加密保存且不会回显。</p></div>
+  <form class="panel model-form" autocomplete="off" data-lpignore="true" data-1p-ignore @submit.prevent="save">
     <fieldset :disabled="busy">
-    <label>接口协议<select v-model="form.protocol"><option value="chat_completions">OpenAI Chat Completions / 兼容接口</option><option value="responses">OpenAI Responses</option><option value="messages">Anthropic Messages</option><option value="gemini">Gemini 原生接口</option></select></label>
-    <label>Base URL<input v-model="form.base_url" name="model-provider-endpoint" type="url" autocomplete="off" spellcheck="false" required placeholder="https://api.example.com/v1"><small>填写协议根地址，包含 /v1 或 /v1beta，不包含具体方法路径。</small></label>
+    <div class="field-pair"><label>接口协议<select v-model="form.protocol"><option value="chat_completions">OpenAI Chat Completions / 兼容接口</option><option value="responses">OpenAI Responses</option><option value="messages">Anthropic Messages</option><option value="gemini">Gemini 原生接口</option></select></label>
+    <label>Base URL<input v-model="form.base_url" name="model-provider-endpoint" type="url" autocomplete="off" spellcheck="false" required placeholder="https://api.example.com/v1"><small>填写协议根地址，包含 /v1 或 /v1beta，不包含具体方法路径。</small></label></div>
     <label>模型 ID<input v-model="form.model_id" :name="`provider-model-id-${session.user?.id}`" autocomplete="off" data-lpignore="true" data-1p-ignore autocapitalize="off" spellcheck="false" required v-codepoints="200" placeholder="手动填写服务商提供的模型名称"></label>
     <label for="provider-api-token">API Key</label>
-    <div class="credential-entry"><input id="provider-api-token" v-model="form.api_key" :name="`provider-api-token-${session.user?.id}`" type="text" :class="{ 'masked-credential': !revealKey }" autocomplete="off" data-lpignore="true" data-1p-ignore autocapitalize="off" spellcheck="false" :required="!settings.configured" :placeholder="settings.has_key ? '已保存；留空保留现有密钥' : '手动填写或粘贴模型服务商的 API Key'"><button type="button" class="secondary" :aria-pressed="revealKey" aria-controls="provider-api-token" @click="revealKey = !revealKey">{{ revealKey ? '隐藏密钥' : '显示密钥' }}</button></div>
+    <div class="credential-entry"><input ref="keyInput" id="provider-api-token" v-model="form.api_key" :name="`provider-api-token-${session.user?.id}`" type="text" :class="{ 'masked-credential': !revealKey }" autocomplete="off" data-lpignore="true" data-1p-ignore autocapitalize="off" spellcheck="false" :required="fromHistory || !settings.configured" :placeholder="!fromHistory && settings.has_key ? '已保存；留空保留现有密钥' : '手动填写或粘贴模型服务商的 API Key'"><button type="button" class="secondary" :aria-pressed="revealKey" aria-controls="provider-api-token" @click="revealKey = !revealKey">{{ revealKey ? '隐藏密钥' : '显示密钥' }}</button></div>
     <p class="muted">模型 ID 由你填写，API Key 不是本站登录密码。已保存的密钥只显示保存状态。</p>
     <p class="notice">连接测试会向你选择的模型发送一条简短请求，可能产生费用。生成时会发送所选课程材料及必要的学习画像。</p>
     <p v-if="error" role="alert" class="error">{{ error }}</p><p v-if="message" role="status" class="success">{{ message }}</p>
@@ -67,7 +79,7 @@ onMounted(() => { void load().catch(e => { error.value = errorMessage(e) }).fina
     <p v-if="historyError" class="error" role="alert">{{ historyError }}</p>
     <p v-if="historyBusy" class="loading" role="status">正在读取配置记录…</p>
     <p v-else-if="!history.length && !historyError" class="empty">尚无配置记录。填写并保存上方表单后，会在这里保留记录。</p>
-    <div v-if="history.length" class="configuration-table"><table><caption class="sr-only">当前用户的模型配置历史</caption><thead><tr><th scope="col">版本 / 保存时间</th><th scope="col">协议 / 模型 ID</th><th scope="col">服务地址</th><th scope="col">密钥 / 状态</th></tr></thead><tbody><tr v-for="entry in history" :key="entry.version"><td data-label="版本 / 保存时间"><strong>v{{ entry.version }}</strong><span v-if="entry.version === settings.version" class="badge">最新</span><small>{{ new Date(entry.created_at).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }) }}</small></td><td data-label="协议 / 模型 ID">{{ protocolLabels[entry.protocol ?? ''] ?? entry.protocol }}<strong>{{ entry.model_id }}</strong></td><td data-label="服务地址">{{ entry.base_url }}</td><td data-label="密钥 / 状态">{{ entry.has_key ? '密钥已加密保存' : '无密钥' }}<small>{{ !entry.configured ? '已移除' : entry.tested_at ? '曾通过连接测试' : '尚未通过连接测试' }}</small></td></tr></tbody></table></div>
+    <div v-if="history.length" class="configuration-table"><table><caption class="sr-only">当前用户的模型配置历史</caption><thead><tr><th scope="col">版本 / 保存时间</th><th scope="col">协议 / 模型 ID</th><th scope="col">服务地址</th><th scope="col">密钥 / 状态</th><th scope="col">操作</th></tr></thead><tbody><tr v-for="entry in history" :key="entry.version"><td data-label="版本 / 保存时间"><strong>v{{ entry.version }}</strong><span v-if="entry.version === settings.version" class="badge">最新</span><small>{{ new Date(entry.created_at).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }) }}</small></td><td data-label="协议 / 模型 ID">{{ protocolLabels[entry.protocol ?? ''] ?? entry.protocol }}<strong>{{ entry.model_id }}</strong></td><td data-label="服务地址">{{ entry.base_url }}</td><td data-label="密钥 / 状态">{{ entry.has_key ? '密钥已加密保存' : '无密钥' }}<small>{{ !entry.configured ? '已移除' : entry.tested_at ? '曾通过连接测试' : '尚未通过连接测试' }}</small></td><td data-label="操作"><button type="button" class="secondary" :disabled="busy || !entry.protocol || !entry.base_url || !entry.model_id" :aria-label="`填入版本 ${entry.version} 的配置`" @click="fillHistory(entry)">填入</button></td></tr></tbody></table></div>
     <div v-if="historyTotal > 10" class="actions pagination"><button class="secondary" :disabled="historyBusy || historyPage <= 1" @click="loadHistory(historyPage - 1)">上一页配置</button><span>第 {{ historyPage }} 页 · 共 {{ historyTotal }} 条</span><button class="secondary" :disabled="historyBusy || historyPage * 10 >= historyTotal" @click="loadHistory(historyPage + 1)">下一页配置</button></div>
   </section>
 </AppShell></template>

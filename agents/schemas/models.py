@@ -54,6 +54,8 @@ class ModelErrorCode(StrEnum):
     AUTH = "MODEL_AUTH"
     NOT_FOUND = "MODEL_NOT_FOUND"
     RATE_LIMIT = "MODEL_RATE_LIMIT"
+    QUOTA = "MODEL_QUOTA"
+    THROTTLED = "MODEL_THROTTLED"
     TIMEOUT = "MODEL_TIMEOUT"
     TRANSPORT = "MODEL_TRANSPORT"
     UNAVAILABLE = "MODEL_UNAVAILABLE"
@@ -79,6 +81,7 @@ class ModelFailure(Exception):
     def retryable(self) -> bool:
         return self.code in {
             ModelErrorCode.RATE_LIMIT,
+            ModelErrorCode.THROTTLED,
             ModelErrorCode.TIMEOUT,
             ModelErrorCode.TRANSPORT,
             ModelErrorCode.UNAVAILABLE,

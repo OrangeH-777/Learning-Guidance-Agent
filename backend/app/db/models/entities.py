@@ -119,6 +119,7 @@ class GenerationTask(Identity, Base):
     profile_version: Mapped[int] = mapped_column(Integer)
     profile_snapshot: Mapped[dict] = mapped_column(JSON)
     model_configuration_id: Mapped[UUID] = mapped_column(ForeignKey("model_configurations.id"))
+    chapter_snapshot: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     knowledge_version: Mapped[str] = mapped_column(String(100))
     prompt_version: Mapped[str] = mapped_column(String(100))
     deadline_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

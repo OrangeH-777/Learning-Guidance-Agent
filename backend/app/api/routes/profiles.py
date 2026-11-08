@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
@@ -49,6 +49,22 @@ def courses(user: User = Depends(current_user), db: Session = Depends(database))
             "version": c.content_version,
         }
         for c in db.scalars(select(Course).order_by(Course.id))
+    ]
+
+
+@router.get("/{course_id}/chapters")
+def chapters(
+    course_id: str,
+    request: Request,
+    user: User = Depends(current_user),
+    db: Session = Depends(database),
+):
+    from backend.app.services.chapters import reviewed_chapters
+
+    require_course(db, course_id)
+    return [
+        {"id": chapter["id"], "title": chapter["title"]}
+        for chapter in reviewed_chapters(request.app.state.settings, course_id)
     ]
 
 

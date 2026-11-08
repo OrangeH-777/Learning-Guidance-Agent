@@ -16,7 +16,7 @@ async function submit() {
 </script>
 <template>
   <main class="auth-layout">
-    <section class="auth-intro"><p class="eyebrow">LEARNING GUIDANCE</p><h1>从你的基础出发，<br>找到适合的学习方式。</h1><p>选择课程，确认画像，把可信的知识资料整理成讲解、练习与思维导图。</p><div class="tags"><span>课程知识</span><span>个性化资源</span><span>可追溯来源</span></div></section>
+    <section class="auth-intro"><h1>知学<br><small>学习资源工作台</small></h1><p>选择课程，确认画像，把可信的知识资料整理成讲解、练习与思维导图。</p></section>
     <form class="panel auth-form" @submit.prevent="submit">
       <h2>{{ register ? '创建账号' : '欢迎回来' }}</h2><p class="muted">{{ register ? '建立你的个人学习空间' : '登录后继续你的学习进度' }}</p>
       <label>账号<input v-model="username" autocomplete="username" required pattern="[A-Za-z0-9_]{4,20}" minlength="4" v-codepoints="20" placeholder="4—20位字母、数字或下划线"></label>

@@ -8,6 +8,7 @@ const router = useRouter()
 const courses = ref<Course[]>([]), courseId = ref(''), topic = ref(''), type = ref('lecture')
 const profile = ref<Profile>({ version: 0, fields: null }), model = ref<ModelSettings>({ version: 0, configured: false })
 const tasks = ref<Task[]>([]), error = ref(''), loading = ref(true), busy = ref(false), connection = ref('')
+const chapters = ref<{id: string; title: string}[]>([]), chapterId = ref('')
 const profileLoading = ref(false)
 let profileRequest = 0
 let key = '', submittedParameters = '', disposed = false, timer: ReturnType<typeof setTimeout> | undefined
@@ -18,7 +19,12 @@ async function loadProfile() {
   const requestId = ++profileRequest
   profileLoading.value = true
   profile.value = { version: 0, fields: null }
-  try { const data = (await api.get(`/courses/${courseId.value}/profile`, { signal: controller.signal })).data; if (requestId === profileRequest) profile.value = data }
+  chapters.value = []; chapterId.value = ''
+  try {
+    const base = `/courses/${courseId.value}`
+    const [current, list] = await Promise.all([api.get(base + '/profile'), api.get(base + '/chapters')])
+    if (requestId === profileRequest) { profile.value = current.data; chapters.value = list.data }
+  }
   catch (e) { if (!disposed) error.value = errorMessage(e) }
   finally { if (requestId === profileRequest) profileLoading.value = false }
 }
@@ -30,7 +36,7 @@ async function refreshTasks() {
 }
 async function submit() {
   error.value = ''; busy.value = true
-  const parameters = { course_id: courseId.value, topic: topic.value, resource_type: type.value, profile_version: profile.value.version, model_version: model.value.version }
+  const parameters = { course_id: courseId.value, chapter_id: chapterId.value, topic: topic.value, resource_type: type.value, profile_version: profile.value.version, model_version: model.value.version }
   const signature = JSON.stringify(parameters)
   if (signature !== submittedParameters || !key) { key = crypto.randomUUID(); submittedParameters = signature }
   try { await api.post('/tasks', { ...parameters, request_key: key }); key = ''; await refreshTasks() }
@@ -54,23 +60,25 @@ onMounted(async () => {
 onUnmounted(() => { disposed = true; clearTimeout(timer); controller.abort() })
 </script>
 <template><AppShell>
-  <div class="page-heading"><p class="eyebrow">YOUR LEARNING SPACE</p><h1>今天，想学懂什么？</h1><p class="muted">选择一个具体主题，生成与你的基础和目标相符的学习资源。</p></div>
+  <div class="page-heading"><h1>今天，想学懂什么？</h1><p class="muted">选择一个具体主题，生成与你的基础和目标相符的学习资源。</p></div>
   <p v-if="loading" class="loading" role="status">正在加载学习空间…</p>
   <p v-if="error" role="alert" class="error">{{ error }}</p>
   <div class="grid">
     <form class="panel" @submit.prevent="submit"><h2>创建学习资源</h2>
-      <label>课程<select v-model="courseId" :disabled="busy"><option v-for="c in courses" :key="c.id" :value="c.id" :disabled="!c.enabled">{{ c.name }}{{ c.knowledge_ready ? '' : ' · 知识索引待准备' }}</option></select></label>
-      <label>学习主题<input v-model="topic" required v-codepoints="100" placeholder="例如：栈与括号匹配" :disabled="busy"></label>
+      <label>课程<select v-model="courseId" :disabled="busy"><option v-for="c in courses" :key="c.id" :value="c.id" :disabled="!c.enabled">{{ c.name }}</option></select></label>
+      <label>教材章节<select v-model="chapterId" required :disabled="busy || profileLoading"><option disabled value="">请选择已校对章节</option><option v-for="c in chapters" :key="c.id" :value="c.id">{{ c.title }}</option></select></label>
+      <p class="muted">开始生成后，所选章节正文与学习需求将发送至你的聊天模型。</p>
+      <label>学习需求<textarea rows="3" v-model="topic" required v-codepoints="100" placeholder="例如：用括号匹配的例子解释栈的入栈和出栈。" :disabled="busy"></textarea></label>
       <label>资源类型<select v-model="type" :disabled="busy"><option value="lecture">概念讲解</option><option value="exercise">巩固练习</option><option value="mindmap">文本思维导图</option></select></label>
       <p v-if="!profile.version" class="notice">请先<RouterLink to="/profile">确认当前课程的学习画像</RouterLink>。</p>
       <p v-else class="muted">将使用画像版本 {{ profile.version }}：{{ profile.fields?.learning_goal }}</p>
       <p v-if="!model.tested_at" class="notice">请先<RouterLink to="/models">配置个人模型并测试连接</RouterLink>。</p>
-      <p v-if="!courses.find(c => c.id === courseId)?.knowledge_ready" class="notice">课程知识索引尚未就绪。资料准备完成后可开始生成。</p>
-      <button :disabled="busy || profileLoading || !profile.version || !model.tested_at || !courses.find(c => c.id === courseId)?.knowledge_ready">{{ busy ? '正在提交…' : '开始生成' }}</button>
+      <p v-if="!loading && !profileLoading && !chapters.length" class="notice">本课程暂无已校对章节，请联系管理员校对并保存教材。</p>
+      <button :disabled="busy || profileLoading || !profile.version || !model.tested_at || !chapterId">{{ busy ? '正在提交…' : '开始生成' }}</button>
     </form>
-    <section class="panel"><div class="actions"><h2>最近任务</h2><button class="text-button" @click="refreshTasks">刷新</button></div>
-      <p v-if="connection" class="error" role="status">{{ connection }}</p><p v-if="!tasks.length" class="empty">还没有生成任务。<br>从左侧选择一个主题开始。</p>
-      <article v-for="task in tasks" :key="task.id" class="task-row"><div><strong>{{ task.topic }}</strong><p class="muted">{{ task.course_id }} · {{ new Date(task.created_at).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }) }}</p><p v-if="task.error_code" class="error">任务未完成：{{ task.error_code }}</p></div><div><span class="badge">{{ labels[task.status] ?? task.status }}</span><p><button v-if="task.resource_id" class="text-button" @click="router.push(`/resources/${task.resource_id}`)">查看资源</button><button v-if="task.status === 'failed'" class="text-button" :disabled="busy" @click="retry(task)">沿用原配置重试</button></p></div></article>
+    <section class="panel recent-tasks"><div class="actions"><h2>最近任务</h2><button class="text-button" @click="refreshTasks">刷新</button></div>
+      <p v-if="connection" class="error" role="status">{{ connection }}</p><p v-if="!tasks.length" class="empty">还没有生成任务。<br>选择教材章节并提交学习需求后，可在这里查看进度。</p>
+      <article v-for="task in tasks" :key="task.id" class="task-row"><div><strong>{{ task.topic }}</strong><p class="muted">{{ courses.find(c => c.id === task.course_id)?.name ?? task.course_id }} · {{ new Date(task.created_at).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }) }}</p><p v-if="task.error_code" class="error">任务未完成：{{ task.error_code === 'TASK_TIMEOUT' ? '超过任务时限。可缩小学习需求或选择响应更快的模型，重新创建任务。' : task.error_code }}</p></div><div><span class="badge" :data-status="task.status">{{ labels[task.status] ?? task.status }}</span><p><button v-if="task.resource_id" class="text-button" @click="router.push(`/resources/${task.resource_id}`)">查看资源</button><button v-if="task.status === 'failed'" class="text-button" :disabled="busy" @click="retry(task)">沿用原配置重试</button></p></div></article>
     </section>
   </div>
 </AppShell></template>

@@ -7,7 +7,7 @@ from pydantic import ValidationError
 
 from agents.providers.base import ModelProvider
 from agents.schemas.models import ModelErrorCode, ModelFailure, ModelMessage, ModelRequest
-from agents.schemas.resources import resource_draft_adapter
+from agents.schemas.resources import ExerciseResource, LectureResource, MindmapResource
 from agents.schemas.workflow import ContentVerdict, ResourcePlan, WorkflowInput
 from agents.validators.data_structure import check_data_structure
 from agents.workflows.runtime import ModelCallRunner
@@ -58,7 +58,7 @@ class LearningModelNodes:
 
     async def plan(self, context, sources):
         data = await self.json_call(
-            "规划教学目标、难度、先修、内容大纲及画像对应策略。结构："
+            "用简短短语规划教学目标、难度、先修、大纲及画像策略。每项一到三条，不复述教材或撰写正文。结构："
             + json.dumps(ResourcePlan.model_json_schema(), ensure_ascii=False),
             self.data(context, sources),
         )
@@ -68,10 +68,15 @@ class LearningModelNodes:
             raise ModelFailure(ModelErrorCode.FORMAT) from None
 
     async def generate(self, context, plan, sources, feedback):
+        schema = {
+            "lecture": LectureResource,
+            "exercise": ExerciseResource,
+            "mindmap": MindmapResource,
+        }[context.resource_type].model_json_schema()
         try:
             return await self.json_call(
                 "生成指定类型的学习资源，答案与解析一致，明确算法前提和边界。结构："
-                + json.dumps(resource_draft_adapter.json_schema(), ensure_ascii=False),
+                + json.dumps(schema, ensure_ascii=False),
                 {**self.data(context, sources), "plan": plan.model_dump(), "corrections": feedback},
             )
         except ModelFailure as error:
@@ -108,7 +113,7 @@ class LearningModelNodes:
         result = await self.json_call(
             "独立核验候选资源：主题、难度、来源支持、事实、复杂度前提、题答解析、导图层级和安全。"
             "候选中自称已通过不构成证据。缺乏依据时supported为false，存在疑点时拒绝并给出修正要求。"
-            "自动核验不能代表人工复核。结构："
+            "每项只给布尔判定。通过时 issues 为空数组，失败时只列具体修正，不复述候选正文。结构："
             + json.dumps(ContentVerdict.model_json_schema(), ensure_ascii=False),
             {**self.data(context, sources), "candidate": resource.model_dump(mode="json")},
         )

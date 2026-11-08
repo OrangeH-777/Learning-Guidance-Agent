@@ -5,8 +5,7 @@ from backend.app.api.dependencies import current_admin
 from backend.app.core.errors import AppError
 from backend.app.schemas.materials import (
     AdminCourse,
-    IndexJob,
-    IndexRequest,
+    CourseCreate,
     MaterialDetail,
     MaterialPreview,
     MaterialSave,
@@ -22,6 +21,13 @@ router = APIRouter(
 @router.get("/courses", response_model=list[AdminCourse])
 def courses(request: Request):
     return request.app.state.public_knowledge.courses()
+
+
+@router.post("/courses", response_model=AdminCourse, status_code=201)
+async def create_course(payload: CourseCreate, request: Request, admin=Depends(current_admin)):
+    manager = request.app.state.public_knowledge
+    async with manager.lock:
+        return await run_in_threadpool(manager.create_course, payload, admin.username)
 
 
 @router.get("/courses/{course_id}/materials/{source_id}", response_model=MaterialDetail)
@@ -61,16 +67,6 @@ async def preview(request: Request, filename: str = Query(min_length=1, max_leng
 async def save(course_id: str, payload: MaterialSave, request: Request):
     manager = request.app.state.public_knowledge
     if manager.lock.locked():
-        raise AppError(409, "KNOWLEDGE_BUSY", "教材正在保存或建立索引，请稍后重试")
+        raise AppError(409, "KNOWLEDGE_BUSY", "教材正在保存，请稍后重试")
     async with manager.lock:
         return await run_in_threadpool(manager.save, course_id, payload)
-
-
-@router.post("/courses/{course_id}/index", response_model=IndexJob, status_code=202)
-async def build_index(course_id: str, payload: IndexRequest, request: Request):
-    return await request.app.state.public_knowledge.start_index(course_id, payload)
-
-
-@router.get("/index", response_model=IndexJob | None)
-def index_status(request: Request):
-    return request.app.state.public_knowledge.job

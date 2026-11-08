@@ -27,7 +27,9 @@ def embedder_for(settings: Settings):
         api_key=settings.embedding_api_key.get_secret_value(),
         model_id=settings.embedding_model,
         dimensions=settings.embedding_dimensions,
-        transport=SafeTransport(settings.model_endpoint_allowlist),
+        transport=SafeTransport(
+            settings.model_endpoint_allowlist, openai_proxy_port=settings.openai_proxy_port
+        ),
     )
 
 

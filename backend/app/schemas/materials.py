@@ -10,6 +10,11 @@ from backend.app.services.material_text import MAX_TEXT_CHARACTERS
 Label = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=500)]
 
 
+class CourseCreate(InputModel):
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
+    description: Annotated[str, StringConstraints(strip_whitespace=True, max_length=500)] = ""
+
+
 class MaterialSave(InputModel):
     expected_version: Label
     source_id: Identifier | None = None

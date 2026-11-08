@@ -43,15 +43,42 @@ async def resolve_addresses(host: str, port: int) -> list[str]:
     return list(dict.fromkeys(item[4][0] for item in results))
 
 
+async def classify_429(response: httpx.Response) -> ModelErrorCode:
+    # Inspect only machine identifiers; never expose or log the provider message.
+    body = bytearray()
+    async for chunk in response.aiter_bytes():
+        if len(body) + len(chunk) > 16384:
+            return ModelErrorCode.RATE_LIMIT
+        body.extend(chunk)
+    try:
+        error = json.loads(body)["error"]
+        tags = {error.get(k) for k in ("code", "type") if isinstance(error.get(k), str)}
+    except (ValueError, TypeError, KeyError, AttributeError, RecursionError):
+        return ModelErrorCode.RATE_LIMIT
+    if tags & {
+        "insufficient_quota",
+        "credit_balance_exhausted",
+        "project_spend_limit_exceeded",
+        "organization_spend_limit_exceeded",
+        "organization_usage_limit_exceeded",
+    }:
+        return ModelErrorCode.QUOTA
+    if "rate_limit_exceeded" in tags:
+        return ModelErrorCode.THROTTLED
+    return ModelErrorCode.RATE_LIMIT
+
+
 class SafeTransport:
     def __init__(
         self,
         allowlist: list[str],
         *,
+        openai_proxy_port: int | None = None,
         resolver: Callable[[str, int], Awaitable[list[str]]] = resolve_addresses,
         transport: httpx.AsyncBaseTransport | None = None,
     ):
         self.allowlist = allowlist
+        self.openai_proxy_port = openai_proxy_port
         self.resolver = resolver
         self.transport = transport
 
@@ -62,17 +89,23 @@ class SafeTransport:
         origin = str(parsed.copy_with(path="/", query=None, fragment=None)).rstrip("/")
         try:
             async with asyncio.timeout(timeout_seconds):
-                addresses = await self.resolver(parsed.host, parsed.port or 443)
-                if not addresses:
-                    raise ModelFailure(ModelErrorCode.TRANSPORT)
-                if origin not in self.allowlist and any(
-                    not ipaddress.ip_address(address).is_global for address in addresses
-                ):
-                    raise ModelFailure(ModelErrorCode.UNSUPPORTED)
-                # Pin the approved DNS answer. TLS verification still uses the original hostname.
-                target = parsed.copy_with(host=addresses[0])
+                proxy = None
+                if self.openai_proxy_port and origin == "https://api.openai.com":
+                    proxy = f"http://127.0.0.1:{self.openai_proxy_port}"
+                    target = parsed  # CONNECT to the fixed official host; TLS still verifies it.
+                else:
+                    addresses = await self.resolver(parsed.host, parsed.port or 443)
+                    if not addresses:
+                        raise ModelFailure(ModelErrorCode.TRANSPORT)
+                    if origin not in self.allowlist and any(
+                        not ipaddress.ip_address(address).is_global for address in addresses
+                    ):
+                        raise ModelFailure(ModelErrorCode.UNSUPPORTED)
+                    # Pin the approved DNS answer. TLS verification still uses the original hostname.
+                    target = parsed.copy_with(host=addresses[0])
                 async with httpx.AsyncClient(
                     transport=self.transport,
+                    proxy=proxy,
                     trust_env=False,
                     follow_redirects=False,
                     timeout=timeout_seconds,
@@ -92,7 +125,7 @@ class SafeTransport:
                             raise ModelFailure(ModelErrorCode.NOT_FOUND)
                         if response.status_code == 429:
                             raise ModelFailure(
-                                ModelErrorCode.RATE_LIMIT,
+                                await classify_429(response),
                                 retry_after_seconds=parse_retry_after(
                                     response.headers.get("Retry-After")
                                 ),

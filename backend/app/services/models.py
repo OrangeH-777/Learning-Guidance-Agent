@@ -33,7 +33,11 @@ def provider_for(configuration: ModelConfiguration, settings: Settings):
     except ValueError:
         raise AppError(503, "ENCRYPTION_NOT_READY", "模型凭据暂时不可用") from None
     return HttpModelProvider(
-        configuration.base_url, key, SafeTransport(settings.model_endpoint_allowlist)
+        configuration.base_url,
+        key,
+        SafeTransport(
+            settings.model_endpoint_allowlist, openai_proxy_port=settings.openai_proxy_port
+        ),
     )
 
 

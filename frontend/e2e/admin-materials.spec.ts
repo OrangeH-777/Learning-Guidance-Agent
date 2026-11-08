@@ -8,7 +8,12 @@ test('administrator previews, corrects and publishes public materials, then inde
   await page.getByRole('button', { name: '登录', exact: true }).click()
   await page.getByRole('link', { name: '公共教材管理', exact: true }).click()
   await expect(page.getByRole('heading', { name: '公共教材管理' })).toBeVisible()
-  await page.getByLabel('教材所属课程').selectOption('upload_course')
+  const courseName = testInfo.project.name + '新课程'
+  await page.getByText('新建课程', {exact:true}).click()
+  await page.getByLabel('课程名称').fill(courseName)
+  await page.getByRole('button', {name:'创建课程',exact:true}).click()
+  await expect(page.getByText('课程已创建，请上传第一份教材。')).toBeVisible()
+  const courseId = await page.getByLabel('教材所属课程').inputValue()
   const title = `${testInfo.project.name}教材`
   await page.getByLabel('上传教材', { exact: false }).setInputFiles({
     name: 'stack.md', mimeType: 'text/markdown', buffer: Buffer.from('# 栈\n\n栈采用后进先出。<script>window.materialXss=1</script>'),
@@ -30,29 +35,29 @@ test('administrator previews, corrects and publishes public materials, then inde
   await expect(page.getByText('公共教材已保存，请建立索引后使用。')).toBeVisible()
   await expect(page.getByRole('heading', { name: '3. 建立课程索引' })).toBeFocused()
   await expect(page.getByRole('heading', { name: '3. 建立课程索引' })).toBeInViewport()
-  await expect(page.getByText(`${title} · 已确认`)).toBeVisible()
+  await expect(page.getByLabel('教材所属课程')).toHaveCount(0)
   await page.getByLabel('确认向配置的嵌入服务发送课程正文', { exact: false }).check()
   await page.getByRole('button', { name: '建立索引', exact: true }).click()
-  await expect(page.getByText(/upload_course：索引已生效/)).toBeVisible()
+  await expect(page.getByText(new RegExp(courseName + '：索引已生效'))).toBeVisible()
   await page.reload()
-  await expect(page.getByText(/upload_course：索引已生效/)).toBeVisible()
-  await page.getByLabel('教材所属课程').selectOption('upload_course')
+  await expect(page.getByText(new RegExp(courseName + '：索引已生效'))).toBeVisible()
+  await page.getByRole('button', {name:/选择 \/ 上传/}).click()
   await page.locator('.material-list li').filter({ hasText: title }).getByRole('button').click()
   await expect(page.getByLabel('教材标题')).toHaveValue(title)
   await expect(page.getByRole('heading', { name: '2. 校对已有教材' })).toBeFocused()
   await expect(page.getByRole('heading', { name: '2. 校对已有教材' })).toBeInViewport()
   await page.getByLabel('教材标题').fill(`${title}未保存`)
   page.once('dialog', dialog => dialog.dismiss())
-  await page.getByLabel('教材所属课程').selectOption('data_structure')
-  await expect(page.getByLabel('教材所属课程')).toHaveValue('upload_course')
+  await page.getByRole('button', {name:/选择 \/ 上传/}).click()
+  await expect(page).toHaveURL(/materials\/review/)
   await expect(page.getByLabel('教材标题')).toHaveValue(`${title}未保存`)
   await page.getByLabel('教材标题').fill(title)
   // A second tab saves while this editor still contains an older revision.
   const auth = await (await page.request.get('/api/auth/session')).json()
   const catalog = await (await page.request.get('/api/admin/courses')).json()
-  const current = catalog.find((c: { id: string }) => c.id === 'upload_course')
+  const current = catalog.find((c: { id: string }) => c.id === courseId)
   const source = current.sources.find((s: { title: string }) => s.title === title)
-  const updated = await page.request.post('/api/admin/courses/upload_course/materials', {
+  const updated = await page.request.post(`/api/admin/courses/${courseId}/materials`, {
     headers: { 'X-CSRF-Token': auth.csrf_token }, data: {
       expected_version: current.version, source_id: source.id, title,
       source_url: source.source_url, section: source.section, license: source.license,
@@ -60,7 +65,6 @@ test('administrator previews, corrects and publishes public materials, then inde
     },
   })
   expect(updated.status()).toBe(201)
-  await page.getByRole('button', { name: '刷新状态' }).click()
   await page.getByLabel('我已核对正文与来源', { exact: false }).check()
   await page.getByRole('button', { name: '确认并保存公共教材' }).click()
   await expect(page.getByText('课程教材已更新，请重新加载后保存')).toBeVisible()

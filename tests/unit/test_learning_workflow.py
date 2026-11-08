@@ -102,7 +102,12 @@ def build_nodes(
 @pytest.mark.parametrize("resource", RESOURCES, ids=["lecture", "exercise", "mindmap"])
 async def test_three_resource_types_pass_only_after_final_verification(resource):
     context, nodes, stages, checks, calls = build_nodes(resource)
-    result = await run_workflow(context, nodes, Deadline(10))
+    from unittest.mock import AsyncMock
+    from dataclasses import replace
+
+    verifier = AsyncMock(wraps=nodes.verify)
+    result = await run_workflow(context, replace(nodes, verify=verifier), Deadline(10))
+    verifier.assert_awaited_once()
     assert result["resource_type"] == resource["resource_type"]
     assert stages == ["planning", "generating", "validating", "formatting"]
     assert len(checks) == 2 and checks[-1][2]["final"]

@@ -5,12 +5,11 @@ from sqlalchemy.orm import Session
 
 from agents.nodes.model_nodes import LearningModelNodes
 from agents.prompts.version import PROMPT_VERSION
-from agents.schemas.workflow import ProfileSnapshot, WorkflowInput
+from agents.schemas.workflow import ProfileSnapshot, SourceFragment, WorkflowInput
 from agents.workflows.learning import ContentRejected, WorkflowNodes, run_workflow
 from agents.workflows.runtime import Deadline, ModelCallRunner
 from backend.app.core.errors import AppError
 from backend.app.db.models import GenerationTask, ModelConfiguration, ValidationRecord
-from backend.app.services.knowledge import retrieve_context
 from backend.app.services.models import selection_for
 from backend.app.services.tasks import advance_task, publish_resource
 from backend.app.tasks.state import TaskStatus
@@ -38,6 +37,7 @@ async def generate_resource(app, task_id: UUID, budget: Deadline):
             knowledge_version=task.knowledge_version,
             prompt_version=task.prompt_version,
         )
+        chapter = task.chapter_snapshot
         provider = app.state.provider_factory(config, settings)
     runner = ModelCallRunner(
         budget,
@@ -57,7 +57,19 @@ async def generate_resource(app, task_id: UUID, budget: Deadline):
         node_started = now
 
     async def retrieve(ctx):
-        return await retrieve_context(engine, ctx, settings, budget, app.state.embedder_factory)
+        if not chapter:
+            raise AppError(409, "CHAPTER_REQUIRED", "请重新选择教材章节")
+        return (
+            SourceFragment(
+                id=ctx.knowledge_version,
+                course_id=ctx.course_id,
+                visibility="public",
+                owner_id=None,
+                content=chapter["content"],
+                locator=chapter["title"],
+                index_version=ctx.knowledge_version,
+            ),
+        )
 
     async def stage(value):
         nonlocal active_node

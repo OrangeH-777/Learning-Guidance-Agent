@@ -1,57 +1,66 @@
 id: data_structure
 name: 数据结构
 description: 从线性结构到树与图，结合查找、排序和算法复杂度学习数据组织方法。
-version: ds-demo-v2
+version: materials-c7ed8ef3750d4e5d90f5222337fbb3ea
 enabled: true
 maintainer: 待课程负责人复核登记
-topics: [线性表, 栈与队列, 树, 图, 查找, 排序]
-prerequisites: [基础程序设计, 数组与指针, 基本数学与逻辑]
+topics:
+- 线性表
+- 栈与队列
+- 树
+- 图
+- 查找
+- 排序
+prerequisites:
+- 基础程序设计
+- 数组与指针
+- 基本数学与逻辑
 sources:
-  - id: linear_lists
-    title: 数组与链表学习摘要
-    file: content/linear_lists.md
-    source_url: https://opendatastructures.org/ods-python/2_Array_Based_Lists.html
-    section: 第2章 Array-Based Lists；相关第3章 Linked Lists
-    license: 本仓库原创教学摘要；参考书为 Open Data Structures，作者 Pat Morin；不收录原书全文或插图。
-    version: demo-2026-09-28
-    review_status: pending_human_review
-  - id: stacks_queues
-    title: 栈、队列与括号匹配学习摘要
-    file: content/stacks_queues.md
-    source_url: https://opendatastructures.org/ods-python/3_Linked_Lists.html
-    section: 第3章 Linked Lists；栈和FIFO队列接口及项目原创括号示例
-    license: 本仓库原创教学摘要与示例；参考 Pat Morin 的 Open Data Structures；不收录原书全文或插图。
-    version: demo-2026-09-28
-    review_status: pending_human_review
-  - id: trees
-    title: 二叉树学习摘要
-    file: content/trees.md
-    source_url: https://opendatastructures.org/ods-python/6_Binary_Trees.html
-    section: 第6章 Binary Trees
-    license: 本仓库原创教学摘要；参考 Pat Morin 的 Open Data Structures；不收录原书全文或插图。
-    version: demo-2026-09-28
-    review_status: pending_human_review
-  - id: graphs
-    title: 图的表示与遍历学习摘要
-    file: content/graphs.md
-    source_url: https://opendatastructures.org/ods-python/12_Graphs.html
-    section: 第12章 Graphs
-    license: 本仓库原创教学摘要；参考 Pat Morin 的 Open Data Structures；不收录原书全文或插图。
-    version: demo-2026-09-28
-    review_status: pending_human_review
-  - id: searching
-    title: 查找的前提与边界学习摘要
-    file: content/searching.md
-    source_url: https://opendatastructures.org/ods-python/6_Binary_Trees.html
-    section: 第6章 Binary Trees 及有序查找基础
-    license: 本仓库原创教学摘要；参考 Pat Morin 的 Open Data Structures；不收录原书全文或插图。
-    version: demo-2026-09-28
-    review_status: pending_human_review
-  - id: sorting
-    title: 排序算法比较学习摘要
-    file: content/sorting.md
-    source_url: https://opendatastructures.org/ods-python/11_Sorting_Algorithms.html
-    section: 第11章 Sorting Algorithms
-    license: 本仓库原创教学摘要；参考 Pat Morin 的 Open Data Structures；不收录原书全文或插图。
-    version: demo-2026-09-28
-    review_status: pending_human_review
+- id: linear_lists
+  title: 数组与链表学习摘要
+  file: content/admin_8564daf0bfe94fe794c56a8a41366e51.md
+  source_url: https://opendatastructures.org/ods-python/2_Array_Based_Lists.html
+  section: 第2章 Array-Based Lists；相关第3章 Linked Lists
+  license: 本仓库原创教学摘要；参考书为 Open Data Structures，作者 Pat Morin；不收录原书全文或插图。
+  version: 8564daf0bfe94fe794c56a8a41366e51
+  review_status: approved
+- id: stacks_queues
+  title: 栈、队列与括号匹配学习摘要
+  file: content/admin_b7fe51c9c1634f10b0ea679437540c57.md
+  source_url: https://opendatastructures.org/ods-python/3_Linked_Lists.html
+  section: 第3章 Linked Lists；栈和FIFO队列接口及项目原创括号示例
+  license: 本仓库原创教学摘要与示例；参考 Pat Morin 的 Open Data Structures；不收录原书全文或插图。
+  version: b7fe51c9c1634f10b0ea679437540c57
+  review_status: approved
+- id: trees
+  title: 二叉树学习摘要
+  file: content/admin_c8c7a9b563614c3792c1c323e257a83c.md
+  source_url: https://opendatastructures.org/ods-python/6_Binary_Trees.html
+  section: 第6章 Binary Trees
+  license: 本仓库原创教学摘要；参考 Pat Morin 的 Open Data Structures；不收录原书全文或插图。
+  version: c8c7a9b563614c3792c1c323e257a83c
+  review_status: approved
+- id: graphs
+  title: 图的表示与遍历学习摘要
+  file: content/admin_12060445a64043198d02be382e829cca.md
+  source_url: https://opendatastructures.org/ods-python/12_Graphs.html
+  section: 第12章 Graphs
+  license: 本仓库原创教学摘要；参考 Pat Morin 的 Open Data Structures；不收录原书全文或插图。
+  version: 12060445a64043198d02be382e829cca
+  review_status: approved
+- id: searching
+  title: 查找的前提与边界学习摘要
+  file: content/admin_c7ed8ef3750d4e5d90f5222337fbb3ea.md
+  source_url: https://opendatastructures.org/ods-python/6_Binary_Trees.html
+  section: 第6章 Binary Trees 及有序查找基础
+  license: 本仓库原创教学摘要；参考 Pat Morin 的 Open Data Structures；不收录原书全文或插图。
+  version: c7ed8ef3750d4e5d90f5222337fbb3ea
+  review_status: approved
+- id: sorting
+  title: 排序算法比较学习摘要
+  file: content/admin_18671156d6e24bc0a3703310219b936d.md
+  source_url: https://opendatastructures.org/ods-python/11_Sorting_Algorithms.html
+  section: 第11章 Sorting Algorithms
+  license: 本仓库原创教学摘要；参考 Pat Morin 的 Open Data Structures；不收录原书全文或插图。
+  version: 18671156d6e24bc0a3703310219b936d
+  review_status: approved

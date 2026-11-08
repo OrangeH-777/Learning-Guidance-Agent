@@ -1,5 +1,6 @@
 """LangGraph orchestration. Only the backend can publish a validated candidate."""
 
+import json
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from typing import TypedDict
@@ -106,12 +107,14 @@ def build_graph(nodes: WorkflowNodes, budget: Deadline, *, regeneration_limit: i
     async def formatting(state: GraphState):
         await nodes.stage("formatting")
         resource = resource_draft_adapter.validate_python(state["candidate"])
+        approved = resource.model_dump(mode="json")
         final = await budget.run(lambda: nodes.format(resource))
-        issues, checks = await validate(state, final)
-        await nodes.record(state["regenerations"], not issues, {"final": True, **checks})
-        if issues:
+        # Compare canonical JSON so a formatter cannot change a value or its type.
+        unchanged = json.dumps(final, sort_keys=True) == json.dumps(approved, sort_keys=True)
+        await nodes.record(state["regenerations"], unchanged, {"final": True, "unchanged": unchanged})
+        if not unchanged:
             raise ContentRejected()
-        return {"final": resource_draft_adapter.validate_python(final).model_dump(mode="json")}
+        return {"final": approved}
 
     graph = StateGraph(GraphState)
     for name, action in (

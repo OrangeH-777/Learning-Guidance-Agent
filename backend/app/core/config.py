@@ -31,6 +31,7 @@ class Settings(BaseSettings):
         "http://127.0.0.1:4173",
         "http://127.0.0.1:8000",
     ]
+    openai_proxy_port: int | None = Field(default=None, ge=1, le=65535)
     model_endpoint_allowlist: list[str] = []
     embedding_protocol: str = ""
     embedding_base_url: str = ""

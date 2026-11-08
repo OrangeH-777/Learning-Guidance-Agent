@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from agents.retrieval.access import source_access
 from backend.app.api.dependencies import current_user, database
 from backend.app.core.errors import AppError
-from backend.app.db.models import KnowledgeChunk, KnowledgeDocument, Resource, User
+from backend.app.db.models import GenerationTask, KnowledgeChunk, KnowledgeDocument, Resource, User
 from backend.app.schemas.responses import HistoryResponse, ResourceResponse, SourceResponse
 
 router = APIRouter(tags=["resources"])
@@ -87,6 +87,27 @@ def source(
     user: User = Depends(current_user),
     db: Session = Depends(database),
 ):
+    task = db.scalar(
+        select(GenerationTask)
+        .where(
+            GenerationTask.knowledge_version == str(source_id),
+            GenerationTask.course_id == course_id,
+            GenerationTask.user_id == user.id,
+        )
+        .limit(1)
+    )
+    if task and task.chapter_snapshot:
+        chapter = task.chapter_snapshot
+        return dict(
+            id=source_id,
+            title=chapter["title"],
+            locator=chapter["title"],
+            source=chapter["source"],
+            license=chapter["license"],
+            content=chapter["content"],
+            version=chapter["version"],
+            index_version=str(source_id),
+        )
     row = db.execute(
         select(KnowledgeChunk, KnowledgeDocument)
         .join(KnowledgeDocument)

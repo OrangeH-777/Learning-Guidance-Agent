@@ -2,7 +2,7 @@
 
 根据经用户确认的学习基础、目标与偏好，结合课程知识生成讲解、练习和文本思维导图，提供自动核验、来源追溯与个人历史。
 
-当前已实现首期业务代码：注册登录、每课程独立画像与对话草稿、个人模型设置、四类协议适配、课程目录与 pgvector 检索、LangGraph 工作流、任务调度、三类资源展示及历史；新增管理员公共教材上传、正文校对和索引管理。已用真实 PostgreSQL 与明确标记的模型替身跑通完整流程；**尚未配置真实聊天/嵌入服务，因此不宣称真实模型质量验收或正式交付完成**。逐项状态见 [plan.md](plan.md)，证据见 [实施报告](docs/test/implementation-phase2.md)。
+当前已实现首期业务代码：注册登录、每课程独立画像与对话草稿、个人模型设置、四类协议适配、课程目录与章节选择、LangGraph 工作流、任务调度、三类资源展示及历史；新增管理员公共教材上传、正文校对和按章生成。已用真实 PostgreSQL 与明确标记的模型替身跑通完整流程；**尚未配置真实聊天/嵌入服务，因此不宣称真实模型质量验收或正式交付完成**。逐项状态见 [plan.md](plan.md)，证据见 [实施报告](docs/test/implementation-phase2.md)。
 
 ## 技术与目录
 
@@ -97,30 +97,9 @@ npm run dev
 
 默认仅允许公网 HTTPS；本地或内网服务由部署方在 `MODEL_ENDPOINT_ALLOWLIST` 配置精确 origin。API Key 后端加密，页面不回显。连接测试、对话提取和生成可能产生服务商费用。
 
-统一嵌入配置在 `.env` 中填写：
+管理员进入“公共教材管理”，选择课程并上传 Markdown、文字版 PDF 或 Word .docx（最多 10 MB）。校对正文、章节和来源后确认保存。单独成行的“第一章”“第2章”等标题用于划分章节。没有此类标题时，整个条目按管理员填写的章节展示，可按章分别上传。
 
-```dotenv
-EMBEDDING_PROTOCOL=openai_compatible
-EMBEDDING_BASE_URL=https://YOUR_PROVIDER/v1
-EMBEDDING_API_KEY=YOUR_KEY
-EMBEDDING_MODEL=YOUR_EMBEDDING_MODEL
-EMBEDDING_DIMENSIONS=YOUR_ACTUAL_DIMENSIONS
-EMBEDDING_INDEX_VERSION=YOUR_UNIQUE_VERSION
-```
-
-上面的占位符必须替换为实际值；维度必须是模型实际输出的整数。不要将密钥放进课程 YAML、前端变量或 Git。保存 `.env` 后重启后端。
-
-管理员登录后，点击导航中的“公共教材管理”：选择课程，上传 Markdown、文字版 PDF 或 Word `.docx`（单文件≤10 MB），预览并校正正文、填写来源信息、确认后保存，再手动建立索引。扫描版 PDF 先 OCR，旧版 `.doc` 先另存；不保留上传原文件，只将确认后的正文保存为公共 Markdown。详细步骤见[管理员教材手册](docs/manual/public-materials.md)。
-
-也可以直接维护目录，YAML 示例及命令见 [教材配置说明](knowledge/README.md#教材配置步骤本地运行)。目录索引读取登记的 Markdown；网站上传会先将 PDF/Word 转换为可校对的文本。当前数据结构已有六个主题的原创演示教材、例题和三个可运行代码示例，均待人工复核；其他真实课程未擅自编造。索引工具默认拒绝未复核资料：
-
-```powershell
-uv run --locked python -m scripts.index_knowledge data_structure
-```
-
-内容负责人实际复核后，在 course.yaml 更新对应 `review_status: approved`。仅限明确的本地开发预览，可使用 `--allow-unreviewed-preview`；该选项不代表材料已通过人工验收。索引会向嵌入服务发送课程正文，可能产生费用。未配置嵌入、不存在匹配材料或索引未就绪时会阻止生成，不制造假向量或来源。
-
-网站每次建立索引会自动生成该课程的新修订版本，更新教材无需手动修改 `.env` 或重建其他课程。全局 `EMBEDDING_INDEX_VERSION` 标识统一嵌入配置族；切换嵌入模型、维度时应更新它，并为所有需要使用的课程重建索引。CLI 仍使用全局值作为索引版本，CLI 更新已有资料时需使用新值。历史资源继续引用原片段。检索参数当前是可调开发初值，真实召回质量尚未测量。
+学习者进入工作台，选择课程、已校对章节和资源类型，填写需求后点击“开始生成”。系统使用个人聊天模型处理所选章节全文。生成任务保留章节快照，重试和引用沿用提交时的正文。此流程无需配置嵌入服务。较长章节须适合所选模型的上下文窗口。
 
 ## 检查与测试
 

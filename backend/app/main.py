@@ -23,7 +23,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         engine = create_database_engine(resolved_settings)
         application.state.database_engine = engine
         application.state.public_knowledge = PublicKnowledgeManager(
-            engine, resolved_settings, lambda config: application.state.embedder_factory(config)
+            engine, resolved_settings
         )
         executor = None
         if engine is not None:
@@ -43,7 +43,6 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         try:
             yield
         finally:
-            await application.state.public_knowledge.close()
             if executor is not None:
                 await executor.close()
             if engine is not None:

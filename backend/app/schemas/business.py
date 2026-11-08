@@ -28,6 +28,7 @@ class ModelConfigurationInput(InputModel):
 
 
 class TaskCreate(InputModel):
+    chapter_id: str | None = Field(default=None, max_length=160)
     course_id: CourseId
     topic: TopicText
     resource_type: Literal["lecture", "exercise", "mindmap"]
