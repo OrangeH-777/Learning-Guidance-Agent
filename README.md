@@ -69,3 +69,5 @@ npm --prefix frontend run test:e2e
 ```
 
 只看公共教材管理的操作流程，可以运行 `npm --prefix frontend run test:e2e -- admin-materials.spec.ts --project=chrome --headed`。浏览器用例在 [frontend/e2e](frontend/e2e)，后端用例在 [tests](tests)。
+
+<!-- 🚪🥷 -->
