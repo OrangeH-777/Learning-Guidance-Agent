@@ -11,6 +11,17 @@
 - 数据库：PostgreSQL（pgvector）、SQLAlchemy 和 Alembic。
 - 测试：pytest 用于后端测试，Playwright 用于浏览器测试。
 
+| 目录 | 内容 |
+| --- | --- |
+| frontend/ | 登录、工作台、画像、模型设置、资源及历史页面 |
+| backend/app/ | 认证、接口、业务、持久化与单进程任务调度 |
+| backend/migrations/ | 三个 Alembic 迁移版本，包含管理员权限字段 |
+| agents/ | 四类协议、节点、LangGraph、检索及核验 |
+| knowledge/<course_id>/ | course.yaml 元数据及 content/*.md 公共正文 |
+| scripts/ | 目录导入、索引、迁移检查、密钥轮换、验收执行及契约导出 |
+| tests/ | 单元、协议、真实数据库集成测试、原始/修订验收样例 |
+| docs/ | 四份原始 Word、设计、测试和使用/运行手册 |
+
 ## 本地运行
 
 **Docker Desktop**　已有容器时，依次启动数据库 `lga-postgres-dev`、后端 `lga-backend` 和前端 `lga-frontend`，然后打开 [Docker 版工作台](http://127.0.0.1:8088)。三个容器可分别管理。首次构建见 [独立容器运行说明](docker/README.md)。
