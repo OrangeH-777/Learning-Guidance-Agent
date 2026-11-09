@@ -8,7 +8,14 @@ from sqlalchemy.orm import Session
 from agents.retrieval.access import source_access
 from backend.app.api.dependencies import current_user, database
 from backend.app.core.errors import AppError
-from backend.app.db.models import GenerationTask, KnowledgeChunk, KnowledgeDocument, Resource, User
+from backend.app.db.models import (
+    GenerationTask,
+    KnowledgeChunk,
+    KnowledgeDocument,
+    Resource,
+    User,
+    ValidationRecord,
+)
 from backend.app.schemas.responses import HistoryResponse, ResourceResponse, SourceResponse
 
 router = APIRouter(tags=["resources"])
@@ -64,16 +71,65 @@ def history(
 def resource(
     resource_id: UUID, user: User = Depends(current_user), db: Session = Depends(database)
 ):
-    row = db.scalar(select(Resource).where(Resource.id == resource_id, Resource.user_id == user.id))
+    row = db.execute(
+        select(
+            Resource,
+            GenerationTask.chapter_snapshot["title"].as_string(),
+            GenerationTask.content_regenerations,
+        )
+        .join(GenerationTask, Resource.task_id == GenerationTask.id)
+        .where(
+            Resource.id == resource_id,
+            Resource.user_id == user.id,
+            GenerationTask.user_id == user.id,
+        )
+    ).one_or_none()
     if row is None:
         raise AppError(404, "NOT_FOUND", "资源不存在")
+    row, chapter, regenerations = row
+    metadata = dict(row.metadata_snapshot)
+    planning = metadata.pop("planning", None)
+    accepted_checks = db.scalars(
+        select(ValidationRecord.checks).where(
+            ValidationRecord.task_id == row.task_id,
+            ValidationRecord.passed.is_(True),
+            ValidationRecord.attempt == regenerations,
+        )
+    ).all()
+    public_checks = (
+        "structure",
+        "sources",
+        "relevant",
+        "supported",
+        "facts_correct",
+        "answers_consistent",
+        "safe",
+    )
+    passed_checks = [
+        key for key in public_checks if any(checks.get(key) is True for checks in accepted_checks)
+    ]
+    format_unchanged = next(
+        (
+            checks["unchanged"]
+            for checks in accepted_checks
+            if checks.get("final") and "unchanged" in checks
+        ),
+        None,
+    )
     return {
+        "process": {
+            "chapter": chapter,
+            "planning": planning,
+            "regenerations": regenerations,
+            "passed_checks": passed_checks,
+            "format_unchanged": format_unchanged,
+        },
         "id": row.id,
         "task_id": row.task_id,
         "course_id": row.course_id,
         "topic": row.topic,
         "content": row.content,
-        "metadata": row.metadata_snapshot,
+        "metadata": metadata,
         "created_at": row.created_at,
         "human_pass": row.human_pass,
         "notice": "由AI生成，仅供参考",

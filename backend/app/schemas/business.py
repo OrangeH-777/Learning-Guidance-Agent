@@ -12,6 +12,10 @@ class ProfileConfirmation(ProfileFields):
     expected_version: int = Field(strict=True, ge=0)
 
 
+class ProfileFromHistoryInput(InputModel):
+    expected_version: int = Field(strict=True, ge=0)
+
+
 class ModelConfigurationInput(InputModel):
     expected_version: int = Field(strict=True, ge=0)
     protocol: ModelProtocol

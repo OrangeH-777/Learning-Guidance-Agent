@@ -111,7 +111,9 @@ def build_graph(nodes: WorkflowNodes, budget: Deadline, *, regeneration_limit: i
         final = await budget.run(lambda: nodes.format(resource))
         # Compare canonical JSON so a formatter cannot change a value or its type.
         unchanged = json.dumps(final, sort_keys=True) == json.dumps(approved, sort_keys=True)
-        await nodes.record(state["regenerations"], unchanged, {"final": True, "unchanged": unchanged})
+        await nodes.record(
+            state["regenerations"], unchanged, {"final": True, "unchanged": unchanged}
+        )
         if not unchanged:
             raise ContentRejected()
         return {"final": approved}
@@ -134,9 +136,24 @@ def build_graph(nodes: WorkflowNodes, budget: Deadline, *, regeneration_limit: i
     return graph.compile()
 
 
+@dataclass(frozen=True)
+class WorkflowResult:
+    content: dict
+    plan: ResourcePlan
+
+
+async def run_workflow_with_plan(
+    context: WorkflowInput, nodes: WorkflowNodes, budget: Deadline, *, regeneration_limit: int = 2
+) -> WorkflowResult:
+    graph = build_graph(nodes, budget, regeneration_limit=regeneration_limit)
+    result = await budget.run(lambda: graph.ainvoke({"context": context}, {"recursion_limit": 20}))
+    return WorkflowResult(content=result["final"], plan=result["plan"])
+
+
 async def run_workflow(
     context: WorkflowInput, nodes: WorkflowNodes, budget: Deadline, *, regeneration_limit: int = 2
 ) -> dict:
-    graph = build_graph(nodes, budget, regeneration_limit=regeneration_limit)
-    result = await budget.run(lambda: graph.ainvoke({"context": context}, {"recursion_limit": 20}))
-    return result["final"]
+    result = await run_workflow_with_plan(
+        context, nodes, budget, regeneration_limit=regeneration_limit
+    )
+    return result.content

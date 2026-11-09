@@ -95,6 +95,7 @@ footer { font-size: .8rem; }
 .app-header nav a:hover { background: #2b514a; text-decoration: none; }
 .app-header nav .router-link-active { color: #fff; background: #385e53; font-weight: 650; }
 .account { overflow-wrap: anywhere; }
+.account button { flex-shrink: 0; white-space: nowrap; }
 .account .secondary { color: #e5efe7; background: transparent; border-color: #719186; padding: 5px 12px; }
 .container { width: 100%; }
 .page-heading { padding: 12px 0 18px; }

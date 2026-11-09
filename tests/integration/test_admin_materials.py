@@ -43,9 +43,7 @@ def admin(client, test_engine, tmp_path):
     settings = client.app.state.settings
     settings.public_knowledge_dir = str(root)
     settings.embedding_index_version = "admin-fixture"
-    client.app.state.public_knowledge = PublicKnowledgeManager(
-        test_engine, settings, lambda config: FakeEmbedder()
-    )
+    client.app.state.public_knowledge = PublicKnowledgeManager(test_engine, settings)
     return client
 
 
@@ -144,6 +142,13 @@ def test_upload_preview_then_save_and_review_is_explicit(admin, name, data):
     assert admin.post("/api/admin/courses/data_structure/materials", json=values).status_code == 409
     other = admin.get("/api/admin/courses").json()[1]
     assert len(other["sources"]) == len(before["sources"])
+    url = f"/api/admin/courses/data_structure/materials/{saved.json()['source_id']}"
+    assert admin.delete(url, params={"expected_version": before["version"]}).status_code == 409
+    revision = {"expected_version": saved.json()["version"]}
+    assert admin.delete(url, params=revision, headers={"X-CSRF-Token": ""}).status_code == 403
+    assert admin.delete(url, params=revision).status_code == 200
+    assert admin.get(url).status_code == 404
+    assert admin.get("/api/admin/courses").json()[0]["sources"] == before["sources"]
 
 
 def test_preview_limits_csrf_and_no_path_from_filename(admin):

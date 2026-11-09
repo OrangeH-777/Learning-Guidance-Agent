@@ -5,8 +5,9 @@ from sqlalchemy.orm import Session
 from backend.app.api.dependencies import current_user, database
 from backend.app.core.errors import AppError
 from backend.app.db.models import Course, ProfileRevision, User
-from backend.app.schemas.business import ProfileConfirmation
-from backend.app.schemas.responses import CourseResponse, ProfileResponse
+from backend.app.schemas.business import ProfileConfirmation, ProfileFromHistoryInput
+from backend.app.schemas.responses import ChapterResponse, CourseResponse, ProfileResponse
+from backend.app.services.profile_history import generate_fields_from_history
 
 router = APIRouter(prefix="/courses", tags=["courses", "profiles"])
 
@@ -37,6 +38,11 @@ def profile_public(profile):
     )
 
 
+def check_version(previous, expected_version: int):
+    if expected_version != (previous.version if previous else 0):
+        raise AppError(409, "VERSION_CONFLICT", "画像已在其他页面更新，请重新读取后再试")
+
+
 @router.get("", response_model=list[CourseResponse])
 def courses(user: User = Depends(current_user), db: Session = Depends(database)):
     return [
@@ -52,7 +58,7 @@ def courses(user: User = Depends(current_user), db: Session = Depends(database))
     ]
 
 
-@router.get("/{course_id}/chapters")
+@router.get("/{course_id}/chapters", response_model=list[ChapterResponse])
 def chapters(
     course_id: str,
     request: Request,
@@ -63,7 +69,7 @@ def chapters(
 
     require_course(db, course_id)
     return [
-        {"id": chapter["id"], "title": chapter["title"]}
+        {key: chapter[key] for key in ("id", "title", "description", "chapter_number")}
         for chapter in reviewed_chapters(request.app.state.settings, course_id)
     ]
 
@@ -82,17 +88,50 @@ def confirm_profile(
     db: Session = Depends(database),
 ):
     require_course(db, course_id)
-    db.scalar(select(User).where(User.id == user.id).with_for_update())
-    previous = latest_profile(db, user.id, course_id)
+    return save_profile(
+        db,
+        user.id,
+        course_id,
+        payload.expected_version,
+        payload.model_dump(exclude={"expected_version"}),
+    )
+
+
+def save_profile(db, user_id, course_id, expected_version, fields):
+    db.scalar(select(User).where(User.id == user_id).with_for_update())
+    previous = latest_profile(db, user_id, course_id)
+    check_version(previous, expected_version)
     version = previous.version if previous else 0
-    if payload.expected_version != version:
-        raise AppError(409, "VERSION_CONFLICT", "画像已在其他页面更新，请重新确认")
-    fields = payload.model_dump(exclude={"expected_version"})
     if previous and fields == previous.fields:
         return profile_public(previous)
     result = ProfileRevision(
-        user_id=user.id, course_id=course_id, version=version + 1, fields=fields
+        user_id=user_id, course_id=course_id, version=version + 1, fields=fields
     )
     db.add(result)
     db.commit()
     return profile_public(result)
+
+
+@router.post("/{course_id}/profile/from-history", response_model=ProfileResponse)
+async def profile_from_history(
+    course_id: str,
+    payload: ProfileFromHistoryInput,
+    request: Request,
+    user: User = Depends(current_user),
+    db: Session = Depends(database),
+):
+    course = require_course(db, course_id)
+    user_id = user.id
+    previous = latest_profile(db, user_id, course_id)
+    check_version(previous, payload.expected_version)
+    fields = await generate_fields_from_history(
+        db,
+        user_id,
+        course,
+        previous,
+        request.app.state.provider_factory,
+        request.app.state.settings,
+    )
+    db.expire(course)
+    require_course(db, course_id)
+    return save_profile(db, user_id, course_id, payload.expected_version, fields.model_dump())

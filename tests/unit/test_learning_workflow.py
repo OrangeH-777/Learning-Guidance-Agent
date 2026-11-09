@@ -12,7 +12,12 @@ from agents.schemas.workflow import (
     SourceFragment,
     WorkflowInput,
 )
-from agents.workflows.learning import ContentRejected, WorkflowNodes, run_workflow
+from agents.workflows.learning import (
+    ContentRejected,
+    WorkflowNodes,
+    run_workflow,
+    run_workflow_with_plan,
+)
 from agents.workflows.runtime import Deadline
 
 RESOURCES = json.loads(
@@ -102,8 +107,8 @@ def build_nodes(
 @pytest.mark.parametrize("resource", RESOURCES, ids=["lecture", "exercise", "mindmap"])
 async def test_three_resource_types_pass_only_after_final_verification(resource):
     context, nodes, stages, checks, calls = build_nodes(resource)
-    from unittest.mock import AsyncMock
     from dataclasses import replace
+    from unittest.mock import AsyncMock
 
     verifier = AsyncMock(wraps=nodes.verify)
     result = await run_workflow(context, replace(nodes, verify=verifier), Deadline(10))
@@ -117,7 +122,10 @@ async def test_three_resource_types_pass_only_after_final_verification(resource)
 
 async def test_invalid_shape_regenerates_at_most_twice_with_feedback():
     context, nodes, stages, checks, calls = build_nodes(RESOURCES[0], bad_candidates=2)
-    await run_workflow(context, nodes, Deadline(10))
+    result = await run_workflow_with_plan(context, nodes, Deadline(10))
+    assert result.plan.objectives == ("理解栈",)
+    assert result.plan.outline == ("栈",)
+    assert result.content["resource_type"] == "lecture"
     assert len(calls) == 3 and calls[1] and calls[2]
     assert [check[1] for check in checks] == [False, False, True, True]
     context, nodes, stages, checks, calls = build_nodes(RESOURCES[0], bad_candidates=3)

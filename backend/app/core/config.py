@@ -2,6 +2,7 @@
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -32,6 +33,7 @@ class Settings(BaseSettings):
         "http://127.0.0.1:8000",
     ]
     openai_proxy_port: int | None = Field(default=None, ge=1, le=65535)
+    openai_proxy_host: Literal["127.0.0.1", "host.docker.internal"] = "127.0.0.1"
     model_endpoint_allowlist: list[str] = []
     embedding_protocol: str = ""
     embedding_base_url: str = ""

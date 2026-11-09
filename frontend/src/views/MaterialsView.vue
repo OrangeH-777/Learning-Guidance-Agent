@@ -6,7 +6,7 @@ import AppShell from '../components/AppShell.vue'
 import { api, errorMessage, session } from '../api/session'
 import { focusSection } from '../composables/focusSection'
 
-interface Source { id: string; title: string; source_url: string; section: string; license: string; review_status: string }
+interface Source { id: string; title: string; chapter_number: number; description: string; source_url: string; section: string; license: string; review_status: string }
 interface Course { id: string; name: string; version: string; sources: Source[] }
 const route = useRoute(), router = useRouter()
 const courses = ref<Course[]>([]), selected = ref(typeof route.query.course === 'string' ? route.query.course : '')
@@ -14,9 +14,10 @@ const action = ref(''), busy = computed(() => Boolean(action.value)), editingId 
 const error = ref(''), message = ref(''), warnings = ref<string[]>([]), filename = ref('')
 const editorOpen = ref(false), editorVersion = ref(''), original = ref('')
 const listHeading = ref<HTMLElement | null>(null), editorHeading = ref<HTMLElement | null>(null), errorPanel = ref<HTMLElement | null>(null)
-const form = reactive({ source_id: null as string | null, title: '', source_url: '', section: '', license: '', content: '', confirmed: false })
+const blankChapter = { source_id: null as string | null, chapter_number: 1, title: '', description: '', source_url: '', section: '', license: '', content: '', confirmed: false }
+const form = reactive({ ...blankChapter })
 const previewOpen = ref(true)
-const fingerprint = () => JSON.stringify([form.title, form.source_url, form.section, form.license, form.content])
+const fingerprint = () => JSON.stringify([form.chapter_number, form.title, form.description, form.source_url, form.section, form.license, form.content])
 const dirty = computed(() => editorOpen.value && (!form.source_id || fingerprint() !== original.value || form.confirmed))
 const course = computed(() => courses.value.find(c => c.id === selected.value))
 const pendingCount = computed(() => course.value?.sources.filter(s => s.review_status !== 'approved').length ?? 0)
@@ -43,7 +44,7 @@ function canDiscard() { return !dirty.value || !session.user || window.confirm('
 function clearEditor() {
   previewOpen.value = true
   editorOpen.value = false
-  Object.assign(form, { source_id: null, title: '', source_url: '', section: '', license: '', content: '', confirmed: false })
+  Object.assign(form, blankChapter)
   warnings.value = []; filename.value = ''; editorVersion.value = ''; original.value = ''; error.value = ''; message.value = ''
 }
 function cancelEdit() { if (canDiscard()) { clearEditor(); void jump('list') } }
@@ -59,7 +60,7 @@ watch(() => route.query.course, value => {
     resetCourse(); selected.value = value
   }
 })
-watch(() => [form.content, form.title, form.source_url, form.section, form.license], () => { form.confirmed = false })
+watch(fingerprint, () => { form.confirmed = false })
 watch(error, value => { if (value && !disposed) void focusSection(() => errorPanel.value) })
 onBeforeRouteLeave(canDiscard)
 onBeforeRouteUpdate((to, from) => from.params.step !== 'review' || (to.fullPath === from.fullPath) || canDiscard())
@@ -91,9 +92,11 @@ async function upload(event: Event) {
     const { data } = await api.post('/admin/materials/preview', file, { params: { filename: file.name }, headers: { 'Content-Type': 'application/octet-stream' } })
     if (disposed) return
     clearEditor(); editorVersion.value = version; filename.value = file.name
+    const lastNumber = course.value?.sources.at(-1)?.chapter_number ?? 0
+    form.chapter_number = data.suggested_chapter_number ?? Math.min(999999, lastNumber + 1)
     form.title = file.name.replace(/\.[^.]+$/, ''); form.content = data.content
     warnings.value = data.warnings; editorOpen.value = true
-    message.value = '正文已提取。请校对内容并填写来源，请核对章节标题和正文，保存后即可使用。'
+    message.value = '已提取正文。请核对章号与名称，填写来源后保存。'
     await jump('editor')
   } catch (e) { if (!disposed) error.value = errorMessage(e) }
   finally { action.value = '' }
@@ -105,12 +108,27 @@ async function edit(source: Source) {
     const { data } = await api.get(`/admin/courses/${selected.value}/materials/${source.id}`)
     if (disposed) return
     clearEditor()
-    Object.assign(form, { source_id: source.id, title: data.title, source_url: data.source_url, section: data.section, license: data.license, content: data.content, confirmed: false })
+    Object.assign(form, { source_id: source.id, chapter_number: data.chapter_number, title: data.title, description: data.description, source_url: data.source_url, section: data.section, license: data.license, content: data.content, confirmed: false })
     original.value = fingerprint(); editorVersion.value = data.version; editorOpen.value = true
-    if (course.value) course.value.version = data.version
     await jump('editor')
   } catch (e) { if (!disposed) error.value = errorMessage(e) }
   finally { action.value = ''; editingId.value = '' }
+}
+async function removeChapter(source: Source) {
+  const current = course.value
+  if (!current || busy.value || !window.confirm(`从《${current.name}》删除第 ${source.chapter_number} 章「${source.title}」？删除后，学生将无法再选择本章，已生成的资源仍可查看。`)) return
+  action.value = 'delete'; error.value = ''; message.value = ''
+  try {
+    const { data } = await api.delete(`/admin/courses/${current.id}/materials/${source.id}`, { params: { expected_version: current.version } })
+    current.sources = current.sources.filter(s => s.id !== source.id)
+    current.version = data.version
+    message.value = `已删除第 ${source.chapter_number} 章「${source.title}」。`
+  } catch (e) { error.value = errorMessage(e) }
+  finally { action.value = '' }
+}
+async function refreshDirectory() {
+  action.value = 'load'; error.value = ''
+  try { await reload() } catch (e) { error.value = errorMessage(e) } finally { action.value = '' }
 }
 async function save() {
   if (!course.value || !form.confirmed) return
@@ -139,7 +157,7 @@ onUnmounted(() => { disposed = true; window.removeEventListener('beforeunload', 
 </script>
 
 <template><AppShell>
-  <div class="page-heading"><h1>公共教材管理</h1><p class="muted">按章节上传教材，校对并保存后，所有用户都可以在工作台选择该章。</p></div>
+  <div class="page-heading"><h1>公共教材管理</h1><p class="muted">维护课程的章节目录。校对保存后，学生即可在工作台选择对应章节。</p></div>
   <nav class="material-steps" aria-label="教材管理步骤">
     <button class="secondary" :disabled="busy" @click="jump('list')"><span>1</span>选择 / 上传</button>
     <button class="secondary" :disabled="busy || !editorOpen" :aria-current="editorOpen ? 'step' : undefined" @click="jump('editor')"><span>2</span>校对 / 保存</button>
@@ -153,11 +171,19 @@ onUnmounted(() => { disposed = true; window.removeEventListener('beforeunload', 
     <label>教材所属课程<select :value="selected" :disabled="busy" @change="changeCourse"><option v-for="c in courses" :key="c.id" :value="c.id">{{ c.name }}</option></select></label>
     <p v-if="!courses.length && !busy" class="empty">暂无课程，点击“新建课程”即可添加。</p>
     <template v-if="course">
-      <div class="material-summary"><span>{{ course.sources.length }} 份教材 · {{ pendingCount }} 份待复核</span></div>
-      <p v-if="!course.sources.length" class="empty">本课程还没有教材，从下方上传第一份资料。</p>
-      <ul class="material-list"><li v-for="s in course.sources" :key="s.id" :class="{ 'selected-material': form.source_id === s.id && editorOpen }"><div class="source-description"><span>{{ s.title }} · {{ s.review_status === 'approved' ? '已确认' : '待复核' }}</span><small class="muted">{{ s.section }}</small></div><button class="secondary" :disabled="busy" @click="edit(s)">{{ action === 'edit' && editingId === s.id ? '读取中…' : '查看 / 校对' }}</button></li></ul>
-      <label class="upload-area">上传教材<input type="file" accept=".md,.pdf,.docx" :disabled="busy" @change="upload"><small>单文件最多10 MB。支持 UTF-8 Markdown、文字版 PDF 和 Word .docx；扫描件先 OCR，旧版 .doc 先另存。</small></label>
+      <label class="upload-area">按章节上传教材
+        <small>每次上传一章，每章一个文件。整本教材请先按章拆分；上传后可修改章号、名称、简介和正文。</small>
+        <input type="file" accept=".md,.pdf,.docx" :disabled="busy" @change="upload">
+        <small>支持 Word（.docx）、文字版 PDF、UTF-8 Markdown，每个文件最多 10 MB。扫描版 PDF 请先 OCR。</small>
+      </label>
       <p v-if="action === 'preview'" class="loading" role="status">正在提取教材正文，请稍候…完成后将自动定位到校对区。</p>
+      <div class="directory-heading"><div><h3>章节目录</h3><small class="muted">共 {{ course.sources.length }} 章 · {{ pendingCount }} 章待复核 · 按章号排列</small></div><button class="text-button" :disabled="busy" @click="refreshDirectory">刷新目录</button></div>
+      <p v-if="!course.sources.length" class="empty">本课程暂无章节，请先上传第一章教材。</p>
+      <ol class="material-list"><li v-for="s in course.sources" :key="s.id">
+        <div class="source-description"><small class="chapter-label">第 {{ s.chapter_number }} 章 · {{ s.review_status === 'approved' ? '已校对' : '待复核' }}</small><strong>{{ s.title }}</strong><p v-if="s.description">{{ s.description }}</p><small class="muted">{{ s.section }}</small></div>
+        <div class="chapter-actions"><button class="secondary" :disabled="busy" @click="edit(s)">{{ action === 'edit' && editingId === s.id ? '读取中…' : '编辑 / 校对' }}</button>
+        <button class="delete-chapter" :aria-label="`删除章节：${s.title}`" :disabled="busy" @click="removeChapter(s)">删除</button></div>
+      </li></ol>
     </template>
   </section>
   <form v-if="step === 'review' && editorOpen" class="panel material-editor" :aria-busy="action === 'save'" @submit.prevent="save">
@@ -167,7 +193,9 @@ onUnmounted(() => { disposed = true; window.removeEventListener('beforeunload', 
     <p v-for="warning in warnings" :key="warning" class="notice">{{ warning }}</p>
     <fieldset :disabled="busy">
       <div class="material-fields">
-        <label>教材标题<input v-model="form.title" required v-codepoints="500"></label>
+        <label>章号<input type="number" v-model.number="form.chapter_number" required min="1" max="999999" step="1"><small>目录按数字升序展示。</small></label>
+        <label>章节名称<input v-model="form.title" required v-codepoints="500"></label>
+        <label class="chapter-intro">章节简介（选填）<textarea v-model="form.description" v-codepoints="500" rows="2" placeholder="这章介绍哪些概念？学生会学到什么？"></textarea></label>
         <label>来源网址<input v-model="form.source_url" type="url" required v-codepoints="2000" placeholder="出版社或原始资料的 HTTP(S) 地址"></label>
         <label>章节 / 页码<input v-model="form.section" required v-codepoints="500"></label>
         <label>授权或使用依据<input v-model="form.license" required v-codepoints="500"></label>
@@ -193,6 +221,15 @@ onUnmounted(() => { disposed = true; window.removeEventListener('beforeunload', 
 .material-list li { display: flex; gap: 1rem; align-items: center; justify-content: space-between; padding: 1rem .5rem; border-bottom: 1px solid #e3e7ed; }
 .source-description { min-width: 0; overflow-wrap: anywhere; }
 .source-description small { display: block; margin-top: 4px; }
+.source-description strong { display: block; font-size: 1.06rem; }
+.source-description p { margin: .25rem 0; white-space: pre-line; }
+.chapter-label { color: #37654e; }
+.directory-heading, .chapter-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.directory-heading h3 { margin: 0; }
+.chapter-actions { flex-shrink: 0; }
+.delete-chapter { color: #963f34; background: transparent; padding: 8px; }
+.delete-chapter:hover { background: #fff1ed; }
+.chapter-intro { grid-column: 1 / -1; }
 .material-list button { flex-shrink: 0; }
 .selected-material { background: #f0f6f1; border-radius: 8px; }
 .upload-area { padding: 20px; margin-top: 24px; background: #f8faf6; border: 1px dashed #a9bfb3; border-radius: 10px; }

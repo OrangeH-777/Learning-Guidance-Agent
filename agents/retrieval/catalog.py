@@ -9,6 +9,8 @@ from pydantic import Field, StringConstraints, field_validator
 from agents.schemas.resources import ContractModel, Text
 
 Identifier = Annotated[str, StringConstraints(strict=True, pattern=r"^[a-z][a-z0-9_]{0,63}$")]
+ChapterNumber = Annotated[int, Field(strict=True, ge=1, le=999999)]
+ChapterDescription = Annotated[str, StringConstraints(strip_whitespace=True, max_length=500)]
 
 
 class SourceEntry(ContractModel):
@@ -20,6 +22,8 @@ class SourceEntry(ContractModel):
     license: Text
     version: Text
     review_status: str
+    chapter_number: ChapterNumber | None = None
+    description: ChapterDescription = ""
 
     @field_validator("source_url")
     @classmethod

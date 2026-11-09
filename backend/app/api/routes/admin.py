@@ -11,6 +11,7 @@ from backend.app.schemas.materials import (
     MaterialSave,
     MaterialSaved,
 )
+from backend.app.services.chapters import suggested_chapter_number
 from backend.app.services.material_text import MAX_FILE_BYTES, MaterialError, preview_document
 
 router = APIRouter(
@@ -58,7 +59,11 @@ async def preview(request: Request, filename: str = Query(min_length=1, max_leng
                 raise AppError(413, "FILE_TOO_LARGE", "单文件不能超过10 MB")
             content.extend(part)
         try:
-            return await run_in_threadpool(preview_document, bytes(content), filename)
+            result = await run_in_threadpool(preview_document, bytes(content), filename)
+            result["suggested_chapter_number"] = suggested_chapter_number(
+                filename, result["content"]
+            )
+            return result
         except MaterialError as error:
             raise AppError(422, "MATERIAL_INVALID", str(error)) from None
 
@@ -70,3 +75,15 @@ async def save(course_id: str, payload: MaterialSave, request: Request):
         raise AppError(409, "KNOWLEDGE_BUSY", "教材正在保存，请稍后重试")
     async with manager.lock:
         return await run_in_threadpool(manager.save, course_id, payload)
+
+
+@router.delete("/courses/{course_id}/materials/{source_id}", response_model=MaterialSaved)
+async def delete_material(
+    course_id: str,
+    source_id: str,
+    request: Request,
+    expected_version: str = Query(min_length=1, max_length=500),
+):
+    manager = request.app.state.public_knowledge
+    async with manager.lock:
+        return await run_in_threadpool(manager.delete, course_id, source_id, expected_version)

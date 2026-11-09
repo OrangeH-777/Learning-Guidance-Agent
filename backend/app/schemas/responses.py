@@ -39,6 +39,13 @@ class CourseResponse(PublicResponse):
     version: str
 
 
+class ChapterResponse(PublicResponse):
+    id: str
+    title: str
+    chapter_number: int
+    description: str
+
+
 class ProfileResponse(PublicResponse):
     version: int = Field(ge=0)
     fields: ProfileFields | None
@@ -137,7 +144,21 @@ class ResourceMetadata(PublicResponse):
     human_pass: bool
 
 
+class PlanningSummary(PublicResponse):
+    objectives: list[str]
+    outline: list[str]
+
+
+class GenerationProcess(PublicResponse):
+    chapter: str | None
+    planning: PlanningSummary | None
+    regenerations: int = Field(ge=0)
+    passed_checks: list[str]
+    format_unchanged: bool | None
+
+
 class ResourceResponse(PublicResponse):
+    process: GenerationProcess
     id: UUID
     task_id: UUID
     course_id: str

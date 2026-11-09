@@ -2,7 +2,7 @@ from typing import Annotated, Literal
 
 from pydantic import Field, StringConstraints, field_validator
 
-from agents.retrieval.catalog import Identifier, SourceEntry
+from agents.retrieval.catalog import ChapterDescription, ChapterNumber, Identifier, SourceEntry
 from backend.app.schemas.inputs import InputModel
 from backend.app.schemas.responses import PublicResponse
 from backend.app.services.material_text import MAX_TEXT_CHARACTERS
@@ -19,6 +19,8 @@ class MaterialSave(InputModel):
     expected_version: Label
     source_id: Identifier | None = None
     title: Label
+    chapter_number: ChapterNumber | None = None
+    description: ChapterDescription = ""
     source_url: Annotated[str, StringConstraints(max_length=2000)]
     section: Label
     license: Label
@@ -40,6 +42,7 @@ class MaterialSave(InputModel):
 
 class MaterialPreview(PublicResponse):
     content: str
+    suggested_chapter_number: ChapterNumber | None = None
     warnings: list[str]
     characters: int
 
@@ -47,6 +50,8 @@ class MaterialPreview(PublicResponse):
 class MaterialEntry(PublicResponse):
     id: str
     title: str
+    chapter_number: ChapterNumber
+    description: str
     source_url: str
     section: str
     license: str

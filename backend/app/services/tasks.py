@@ -85,7 +85,7 @@ def create_task(
             (
                 c
                 for c in reviewed_chapters(settings, payload.course_id)
-                if c["id"] == payload.chapter_id
+                if payload.chapter_id in (c["id"], c["legacy_id"])
             ),
             None,
         )

@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 from agents.nodes.model_nodes import LearningModelNodes
 from agents.prompts.version import PROMPT_VERSION
 from agents.schemas.workflow import ProfileSnapshot, SourceFragment, WorkflowInput
-from agents.workflows.learning import ContentRejected, WorkflowNodes, run_workflow
+from agents.workflows.learning import ContentRejected, WorkflowNodes, run_workflow_with_plan
 from agents.workflows.runtime import Deadline, ModelCallRunner
 from backend.app.core.errors import AppError
 from backend.app.db.models import GenerationTask, ModelConfiguration, ValidationRecord
@@ -99,7 +99,7 @@ async def generate_resource(app, task_id: UUID, budget: Deadline):
         record,
     )
     try:
-        final = await run_workflow(
+        result = await run_workflow_with_plan(
             context, nodes, budget, regeneration_limit=settings.content_regeneration_limit
         )
     except ContentRejected:
@@ -132,8 +132,9 @@ async def generate_resource(app, task_id: UUID, budget: Deadline):
         "prompt_version": context.prompt_version,
         "ai_notice": "由AI生成，仅供参考",
         "automatic_checks": "passed",
+        "planning": result.plan.model_dump(mode="json", include={"objectives", "outline"}),
         "human_pass": False,
     }
     budget.remaining()
     with Session(engine) as db, db.begin():
-        publish_resource(db, task_id, final, metadata)
+        publish_resource(db, task_id, result.content, metadata)

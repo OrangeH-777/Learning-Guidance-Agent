@@ -74,11 +74,13 @@ class SafeTransport:
         allowlist: list[str],
         *,
         openai_proxy_port: int | None = None,
+        openai_proxy_host: str = "127.0.0.1",
         resolver: Callable[[str, int], Awaitable[list[str]]] = resolve_addresses,
         transport: httpx.AsyncBaseTransport | None = None,
     ):
         self.allowlist = allowlist
         self.openai_proxy_port = openai_proxy_port
+        self.openai_proxy_host = openai_proxy_host
         self.resolver = resolver
         self.transport = transport
 
@@ -91,7 +93,7 @@ class SafeTransport:
             async with asyncio.timeout(timeout_seconds):
                 proxy = None
                 if self.openai_proxy_port and origin == "https://api.openai.com":
-                    proxy = f"http://127.0.0.1:{self.openai_proxy_port}"
+                    proxy = f"http://{self.openai_proxy_host}:{self.openai_proxy_port}"
                     target = parsed  # CONNECT to the fixed official host; TLS still verifies it.
                 else:
                     addresses = await self.resolver(parsed.host, parsed.port or 443)
@@ -101,7 +103,7 @@ class SafeTransport:
                         not ipaddress.ip_address(address).is_global for address in addresses
                     ):
                         raise ModelFailure(ModelErrorCode.UNSUPPORTED)
-                    # Pin the approved DNS answer. TLS verification still uses the original hostname.
+                    # Pin the approved address; TLS verifies the original hostname.
                     target = parsed.copy_with(host=addresses[0])
                 async with httpx.AsyncClient(
                     transport=self.transport,

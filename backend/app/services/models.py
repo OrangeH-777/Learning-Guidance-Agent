@@ -36,7 +36,9 @@ def provider_for(configuration: ModelConfiguration, settings: Settings):
         configuration.base_url,
         key,
         SafeTransport(
-            settings.model_endpoint_allowlist, openai_proxy_port=settings.openai_proxy_port
+            settings.model_endpoint_allowlist,
+            openai_proxy_port=settings.openai_proxy_port,
+            openai_proxy_host=settings.openai_proxy_host,
         ),
     )
 

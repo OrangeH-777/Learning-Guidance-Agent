@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import AppShell from '../components/AppShell.vue'
 import MindmapBranch from '../components/MindmapBranch.vue'
+import GenerationProcessDetails from '../components/GenerationProcessDetails.vue'
 import TextContent from '../components/TextContent.vue'
 import { api, errorMessage } from '../api/session'
 import type { LearningResource, Source } from '../types/resources'
@@ -57,6 +58,7 @@ watch(() => route.params.id, async (id, _previous, onCleanup) => {
     <div class="resource-tools"><button type="button" :disabled="loading" @click="copyResource">复制全文</button><button type="button" class="secondary" :disabled="loading" @click="exportResource">导出 Markdown</button><span class="muted" role="status">{{ transferStatus }}</span></div>
     <p class="notice">{{ resource.notice }} · 自动核验已通过 · {{ resource.human_pass ? '已获人工复核' : '尚未人工复核' }}</p>
     <p class="muted">{{ resource.course_id }} · {{ resource.topic }} · 画像 v{{ resource.metadata.profile.version }} · {{ new Date(resource.created_at).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai' }) }}（北京时间）</p>
+    <GenerationProcessDetails :process="resource.process" :kind="resource.content.resource_type" />
     <details><summary>生成时的配置</summary><p>模型：{{ resource.metadata.model.model_id }} / {{ resource.metadata.model.protocol }}</p><p>知识版本：{{ resource.metadata.knowledge_version }}</p><p>提示词版本：{{ resource.metadata.prompt_version }}</p></details>
     <template v-if="resource.content.resource_type === 'lecture'">
       <h2>学习目标</h2><ul><li v-for="(text, i) in resource.content.learning_objectives" :key="i"><TextContent :text="text" inline /></li></ul><h2>先修知识</h2><ul><li v-for="(text, i) in resource.content.prerequisites" :key="i"><TextContent :text="text" inline /></li></ul>
