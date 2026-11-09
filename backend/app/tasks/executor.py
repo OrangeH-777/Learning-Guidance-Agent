@@ -86,7 +86,7 @@ class TaskExecutor:
         except SQLAlchemyError:
             self._fail(task_id, "SAVE_FAILED")
         except Exception:
-            # Never log exception text: provider/DB exceptions may contain credentials or material.
+            # Never log exception text: provider/DB exceptions may contain credentials or material,ok.
             self._fail(task_id, "INTERNAL_ERROR")
 
     def _fail(self, task_id: UUID, code: str):
